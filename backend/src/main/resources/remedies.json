@@ -1,0 +1,107 @@
+{
+  "Late Blight (Phytophthora infestans)": {
+    "organicRemedies": [
+      { "name": "Copper-based organic fungicide spray", "instructions": "Spray a copper hydroxide or copper oxychloride organic-approved formulation over foliage, ensuring full leaf coverage including undersides.", "applicationFrequency": "Every 7 days during humid/wet weather" },
+      { "name": "Crop rotation and sanitation", "instructions": "Rotate away from potato/tomato family crops for at least 2 seasons; remove and destroy (do not compost) all infected plant debris immediately after harvest.", "applicationFrequency": "Once per season" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Mancozeb-based fungicide", "activeIngredient": "Mancozeb 75% WP", "instructions": "Apply as a protective foliar spray before infection establishes; do not apply after visible sporulation has spread widely.", "dosage": "2-2.5 g per litre of water (follow product label for your region)", "preHarvestIntervalDays": "7 days", "safetyPrecautions": "Wear gloves and a mask; avoid spraying in windy conditions; keep children and livestock away from treated fields until spray has dried." },
+      { "name": "Chlorothalonil fungicide", "activeIngredient": "Chlorothalonil 75% WP", "instructions": "Use as an alternate rotation partner with Mancozeb to reduce resistance build-up.", "dosage": "2 g per litre of water (follow product label for your region)", "preHarvestIntervalDays": "7-10 days", "safetyPrecautions": "Avoid inhalation and skin contact; wash hands thoroughly after application; do not apply within the pre-harvest interval." }
+    ]
+  },
+  "Early Blight (Alternaria solani)": {
+    "organicRemedies": [
+      { "name": "Neem oil spray", "instructions": "Mix cold-pressed neem oil with a mild soap emulsifier and water; spray on affected foliage in the early morning or evening.", "applicationFrequency": "Every 5-7 days" },
+      { "name": "Mulching and lower-leaf pruning", "instructions": "Remove lower leaves touching soil and apply straw mulch to reduce soil splash that spreads spores onto foliage.", "applicationFrequency": "Once, then maintain through season" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Azoxystrobin fungicide", "activeIngredient": "Azoxystrobin 23% SC", "instructions": "Apply at first sign of concentric leaf-spot lesions; rotate with a different mode-of-action fungicide to prevent resistance.", "dosage": "1 ml per litre of water (follow product label for your region)", "preHarvestIntervalDays": "3-5 days", "safetyPrecautions": "Toxic to aquatic life; do not apply near water bodies; use recommended PPE." }
+    ]
+  },
+  "Bacterial Leaf Blight (Xanthomonas oryzae)": {
+    "organicRemedies": [
+      { "name": "Balanced nitrogen management", "instructions": "Avoid excess nitrogen fertiliser, which increases susceptibility; split nitrogen doses across growth stages instead of one heavy application.", "applicationFrequency": "Per crop cycle" },
+      { "name": "Field drainage management", "instructions": "Avoid prolonged standing water and ensure fields drain well after heavy rain, since the pathogen spreads readily in waterlogged conditions.", "applicationFrequency": "Continuous during season" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Copper oxychloride + Streptocycline", "activeIngredient": "Copper oxychloride 50% WP + Streptomycin sulphate", "instructions": "Apply as a combined spray at early symptom onset; this bactericide combination is the standard extension recommendation for bacterial leaf blight in rice.", "dosage": "Copper oxychloride 3 g/L + Streptocycline 1 g in 15 L water (follow product label / local KVK advisory)", "preHarvestIntervalDays": "10 days", "safetyPrecautions": "Do not mix with alkaline pesticides; wear gloves and eye protection; avoid spraying during flowering to protect pollinators." }
+    ]
+  },
+  "Rice Blast (Magnaporthe oryzae)": {
+    "organicRemedies": [
+      { "name": "Silicon soil amendment", "instructions": "Apply calcium silicate slag or rice-husk ash to paddy soil; silicon uptake strengthens leaf tissue against fungal penetration.", "applicationFrequency": "Once per season, at land preparation" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Tricyclazole fungicide", "activeIngredient": "Tricyclazole 75% WP", "instructions": "Apply preventively at boot-leaf stage and again at early heading, the two most vulnerable growth stages for panicle blast.", "dosage": "0.6 g per litre of water (follow product label for your region)", "preHarvestIntervalDays": "21 days", "safetyPrecautions": "Follow the pre-harvest interval strictly for a food crop; store away from food and animal feed." }
+    ]
+  },
+  "Stripe Rust (Puccinia striiformis)": {
+    "organicRemedies": [
+      { "name": "Resistant variety rotation", "instructions": "Where the disease recurs, rotate to a rust-resistant wheat variety recommended by your local agricultural university for the next sowing.", "applicationFrequency": "Per sowing season" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Propiconazole fungicide", "activeIngredient": "Propiconazole 25% EC", "instructions": "Apply at first appearance of yellow striping on leaves; a second spray 15 days later if humid weather persists.", "dosage": "1 ml per litre of water (follow product label for your region)", "preHarvestIntervalDays": "30 days", "safetyPrecautions": "Wheat rust spreads via windborne spores across large areas rapidly; report outbreaks to your local agriculture office in addition to treating your own field." }
+    ]
+  },
+  "Northern Corn Leaf Blight": {
+    "organicRemedies": [
+      { "name": "Residue management / tillage", "instructions": "Plough under or remove crop residue after harvest, since the fungus overwinters on infected maize debris.", "applicationFrequency": "Once per season, post-harvest" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Pyraclostrobin + Metconazole fungicide", "activeIngredient": "Pyraclostrobin 13.7% + Metconazole 6.8% SC", "instructions": "Apply between tasseling and silking if lesions are spreading up the canopy.", "dosage": "1 ml per litre of water (follow product label for your region)", "preHarvestIntervalDays": "14 days", "safetyPrecautions": "Use protective eyewear; avoid application within 24 hours of expected rainfall for effectiveness." }
+    ]
+  },
+  "Citrus Greening / Huanglongbing": {
+    "organicRemedies": [
+      { "name": "Remove and destroy infected trees", "instructions": "There is currently no cure for Huanglongbing. Infected trees should be removed and destroyed promptly to reduce the source of infection for the Asian citrus psyllid vector.", "applicationFrequency": "Immediately upon confirmed diagnosis" },
+      { "name": "Psyllid vector control via reflective mulch", "instructions": "Use reflective foil mulch around young, uninfected trees to reduce psyllid landing rates while the orchard is monitored.", "applicationFrequency": "Ongoing" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Vector (psyllid) control insecticide", "activeIngredient": "Imidacloprid 17.8% SL (soil drench, uninfected trees only)", "instructions": "This treats the insect vector, not the disease itself, and should only be used on healthy trees near a confirmed outbreak, under guidance from your local plant protection office.", "dosage": "As per local extension advisory; do not self-apply without consulting authorities given quarantine implications", "preHarvestIntervalDays": "N/A - vector control on non-fruiting or pre-harvest trees", "safetyPrecautions": "This is a quarantine-notifiable disease in most regions. Contact your regional plant quarantine / agriculture authority before taking action, in addition to any treatment." }
+    ]
+  },
+  "Panama Wilt / Fusarium Wilt TR4": {
+    "organicRemedies": [
+      { "name": "Quarantine and destroy infected mats", "instructions": "There is no cure once a plant is infected. Isolate the affected area, avoid moving soil, tools, or planting material off-site, and destroy infected plants in place.", "applicationFrequency": "Immediately upon confirmed diagnosis" },
+      { "name": "Biosecurity / footwear disinfection", "instructions": "Disinfect boots and tools with a quaternary ammonium or chlorine-based footbath before and after entering the affected plot to avoid spreading spores.", "applicationFrequency": "Every field visit" }
+    ],
+    "chemicalRemedies": []
+  },
+  "Powdery Mildew": {
+    "organicRemedies": [
+      { "name": "Potassium bicarbonate spray", "instructions": "Dissolve potassium bicarbonate in water with a horticultural-oil surfactant and spray over affected canopy; disrupts fungal cell walls on contact.", "applicationFrequency": "Every 7 days" },
+      { "name": "Canopy management", "instructions": "Prune to open the canopy and improve airflow, reducing the humid microclimate the fungus needs to spread.", "applicationFrequency": "Once, then maintain through season" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Sulfur-based fungicide", "activeIngredient": "Wettable sulfur 80% WP", "instructions": "Apply in cooler parts of the day; do not apply within 2 weeks of an oil spray or in temperatures above 32°C to avoid leaf scorch.", "dosage": "2-3 g per litre of water (follow product label for your region)", "preHarvestIntervalDays": "1 day", "safetyPrecautions": "Avoid combining with oil-based sprays; irritant to eyes and skin." }
+    ]
+  },
+  "Apple Scab": {
+    "organicRemedies": [
+      { "name": "Fallen leaf removal", "instructions": "Rake and destroy fallen leaves in autumn, since the fungus overwinters in leaf litter and releases spores in spring.", "applicationFrequency": "Once per season, post-leaf-fall" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Captan fungicide", "activeIngredient": "Captan 50% WP", "instructions": "Apply protectively from green-tip stage through petal fall, the primary infection period for apple scab.", "dosage": "2 g per litre of water (follow product label for your region)", "preHarvestIntervalDays": "7 days", "safetyPrecautions": "Wear gloves; avoid contact with eyes; do not apply during bloom to protect pollinating bees." }
+    ]
+  },
+  "Bacterial Blight (Cotton)": {
+    "organicRemedies": [
+      { "name": "Seed treatment sanitation", "instructions": "Use only certified, disease-free seed and treat seed with hot water (52°C for 10 minutes) before sowing to kill seed-borne bacteria.", "applicationFrequency": "Once, pre-sowing" }
+    ],
+    "chemicalRemedies": [
+      { "name": "Copper oxychloride spray", "activeIngredient": "Copper oxychloride 50% WP", "instructions": "Spray at first appearance of angular water-soaked leaf spots; repeat if wet weather continues.", "dosage": "3 g per litre of water (follow product label for your region)", "preHarvestIntervalDays": "10 days", "safetyPrecautions": "Wear gloves and eye protection; avoid spraying in direct midday sun." }
+    ]
+  },
+  "Healthy - No Disease Detected": {
+    "organicRemedies": [
+      { "name": "Routine preventive monitoring", "instructions": "No treatment needed. Continue periodic visual inspection, balanced fertilisation, and proper irrigation to maintain plant health.", "applicationFrequency": "Weekly visual check" }
+    ],
+    "chemicalRemedies": []
+  },
+  "UNKNOWN": {
+    "organicRemedies": [
+      { "name": "Consult a local agronomist", "instructions": "The system could not confidently match this image to a disease in its knowledge base. Please consult your nearest Krishi Vigyan Kendra or agricultural extension officer with the photo for an expert opinion.", "applicationFrequency": "As soon as possible" }
+    ],
+    "chemicalRemedies": []
+  }
+}

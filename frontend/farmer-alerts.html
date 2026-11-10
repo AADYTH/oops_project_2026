@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOLIX — Nearby Farmer Alerts</title>
+<meta name="description" content="Active disease-risk warnings from farmers in your area. Exact farmer locations are hidden for privacy." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="dashboard.css" />
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css" onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';" />
+<link rel="stylesheet" href="farmer-alerts.css" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1F3B2A" />
+</head>
+<body data-page="farmer-alerts">
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="index.html" aria-label="FOLIX — Home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="22" height="22"><path d="M16 2C9 8 6 14 6 19a10 10 0 0 0 20 0c0-5-3-11-10-17Z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-name">FOLIX</span>
+    </a>
+    <nav class="header-nav" aria-label="Primary">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="how-it-works.html" data-nav="how">How it works</a>
+      <a href="scanner.html" data-nav="scanner">Scanner</a>
+      <a href="dashboard.html" data-nav="dashboard">Dashboard</a>
+      <a href="heatmap.html" data-nav="map">Disease Map</a>
+      <a href="farmer-alerts.html" data-nav="farmer-alerts">Nearby Alerts</a>
+    </nav>
+    <div class="header-tools">
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">&#9776;</button>
+    </div>
+  </div>
+</header>
+<script src="protocol-check.js"></script>
+<script src="nav.js"></script>
+<script src="auth.js"></script>
+<script src="location.js"></script>
+
+<main class="wrap fa-page">
+
+  <!-- Compact Page Header -->
+  <div class="fa-header">
+    <div class="fa-header-main">
+      <div class="fa-tag-pill">
+        <span class="fa-tag-dot" aria-hidden="true"></span>
+        <span>NEARBY ALERTS</span>
+      </div>
+      <h1 class="fa-title">Nearby Farmer Alerts</h1>
+      <p class="fa-subtitle">Active disease-risk warnings from farmers in your area.</p>
+      <p class="fa-privacy-sub">
+        <svg class="fa-icon-bell" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+        </svg>
+        <span>Farmer locations are hidden for privacy.</span>
+      </p>
+    </div>
+    <div class="fa-header-badge">
+      <div class="fa-active-badge">
+        <span class="fa-badge-dot" aria-hidden="true"></span>
+        <span id="faActiveCount">0 Active</span>
+        <span id="faCount" class="visually-hidden">0 alerts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters / Controls Bar -->
+  <div class="fa-controls-bar" id="faControlsBar">
+    <div class="fa-filter-group">
+      <div class="fa-select-wrap">
+        <svg class="fa-select-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <select id="faFilterAlerts" class="fa-filter-select" aria-label="Filter by alert type">
+          <option value="ALL">All Alerts</option>
+          <option value="EPIDEMIC">Epidemic Risk</option>
+        </select>
+        <span class="fa-select-chevron" aria-hidden="true">&#9662;</span>
+      </div>
+
+      <div class="fa-select-wrap">
+        <svg class="fa-select-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 4 9 9 10 0-4 .5-8 3-11 2.5-3 5-4.5 8-5-.5 3-2 5.5-5 8-3 2.5-7 3-11 3"/></svg>
+        <select id="faFilterCrops" class="fa-filter-select" aria-label="Filter by crop">
+          <option value="ALL">All Crops</option>
+        </select>
+        <span class="fa-select-chevron" aria-hidden="true">&#9662;</span>
+      </div>
+
+      <div class="fa-select-wrap">
+        <svg class="fa-select-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <select id="faFilterDiseases" class="fa-filter-select" aria-label="Filter by disease">
+          <option value="ALL">All Diseases</option>
+        </select>
+        <span class="fa-select-chevron" aria-hidden="true">&#9662;</span>
+      </div>
+
+      <div class="fa-select-wrap">
+        <svg class="fa-select-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <select id="faFilterTime" class="fa-filter-select" aria-label="Filter by time range">
+          <option value="7">Last 7 Days</option>
+          <option value="1">Last 24 Hours</option>
+          <option value="ALL">All Time</option>
+        </select>
+        <span class="fa-select-chevron" aria-hidden="true">&#9662;</span>
+      </div>
+    </div>
+
+    <button id="faResetBtn" class="fa-reset-btn" type="button" aria-label="Reset all filters">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      <span>Reset</span>
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div class="dash-state fa-state-card" id="faLoading">
+    <div class="dash-spinner" aria-hidden="true"></div>
+    <p>Loading alerts&hellip;</p>
+  </div>
+
+  <!-- Auth required state -->
+  <div class="dash-state fa-state-card" id="faAuthRequired" hidden>
+    <h3>Log in to see nearby alerts</h3>
+    <p>Epidemic-risk alerts are only shown to verified farmers. Log in, or create a free account, to view them.</p>
+    <div class="dash-state-actions">
+      <a class="btn btn-primary" href="login.html?next=farmer-alerts.html">Log in</a>
+      <a class="btn btn-secondary" href="register.html?next=farmer-alerts.html">Create account</a>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div class="dash-state fa-state-card" id="faError" hidden>
+    <h3>Couldn't load alerts</h3>
+    <p id="faErrorMessage">Something went wrong while reaching the FOLIX server.</p>
+    <button class="btn btn-secondary" id="faRetryBtn" type="button">Try again</button>
+  </div>
+
+  <!-- Empty state (no alerts at all in area) -->
+  <div class="dash-state fa-state-card" id="faEmpty" hidden>
+    <div class="fa-empty-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 4 9 9 10 0-4 .5-8 3-11 2.5-3 5-4.5 8-5-.5 3-2 5.5-5 8-3 2.5-7 3-11 3"/></svg>
+    </div>
+    <h3>No nearby alerts</h3>
+    <p>New alerts will appear here when a disease-risk report is detected in your area.</p>
+    <a class="btn btn-primary" href="dashboard.html">Go to Dashboard</a>
+  </div>
+
+  <!-- Main Grid Content (when alerts are loaded) -->
+  <div class="fa-grid" id="faList" hidden aria-label="Nearby alerts content">
+    
+    <!-- Left Column: Active Alerts List -->
+    <section class="fa-main-card" aria-label="Active Alerts list">
+      <div class="fa-card-header-bar">
+        <h2 class="fa-card-section-title">Active Alerts</h2>
+        <div class="fa-sort-wrap">
+          <label for="faSortSelect" class="fa-sort-label">Sort by:</label>
+          <div class="fa-select-wrap fa-select-wrap--sort">
+            <select id="faSortSelect" class="fa-sort-select" aria-label="Sort alerts">
+              <option value="LATEST">Latest</option>
+              <option value="OLDEST">Oldest</option>
+            </select>
+            <span class="fa-select-chevron" aria-hidden="true">&#9662;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guest surveillance banner -->
+      <div class="fa-guest-banner" id="faGuestBanner" hidden>
+        <div class="fa-guest-banner-icon" aria-hidden="true">🌐</div>
+        <div class="fa-guest-banner-body">
+          <strong>Public Surveillance Feed Active</strong>
+          <p>Displaying regional epidemic outbreaks from verified reports. <a href="login.html?next=farmer-alerts.html">Log in</a> or <a href="register.html?next=farmer-alerts.html">Register</a> for automated SMS alerts on your farm.</p>
+        </div>
+      </div>
+
+      <!-- Zero direct alerts state (keeps map visible) -->
+      <div class="fa-zero-direct-card" id="faZeroDirect" hidden>
+        <div class="fa-zero-icon" aria-hidden="true">🛡️</div>
+        <h3>No Direct Threats in Your Farm Sector</h3>
+        <p>Your local farm boundary is clear of reported outbreaks. Live regional surveillance zones remain active on the map preview.</p>
+      </div>
+
+      <!-- Real alert cards -->
+      <div class="fa-cards-list" id="faCards" role="list"></div>
+
+      <!-- Filter zero matches state -->
+      <div class="fa-filter-empty" id="faFilterEmpty" hidden>
+        <p>No alerts match the selected filters.</p>
+        <button class="btn btn-secondary btn-sm" id="faFilterResetBtn" type="button">Reset filters</button>
+      </div>
+
+      <!-- End of List Indicator -->
+      <div class="fa-list-end" id="faListEnd">
+        <div class="fa-leaf-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12c0 5 4 9 9 10 0-4 .5-8 3-11 2.5-3 5-4.5 8-5-.5 3-2 5.5-5 8-3 2.5-7 3-11 3"/></svg>
+        </div>
+        <p class="fa-end-title">No more alerts at the moment</p>
+        <p class="fa-end-desc">New alerts will appear here as soon as they're detected.</p>
+      </div>
+    </section>
+
+    <!-- Right Column: Map Preview and Privacy explanation -->
+    <aside class="fa-side-cards" aria-label="Geographic preview and privacy info">
+      
+      <!-- Map View Card -->
+      <div class="fa-map-card">
+        <div class="fa-map-header">
+          <div class="fa-map-title">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <span>Map View</span>
+          </div>
+          <a href="heatmap.html" class="fa-map-link" id="faOpenMapLink">Open in map &rarr;</a>
+        </div>
+        <div class="fa-minimap-wrap">
+          <div id="faMiniMap" class="fa-minimap" aria-label="Nearby disease risk preview map"></div>
+          <button id="faLocateBtn" class="fa-locate-btn" type="button" title="Center map on your location" aria-label="Center map on your location">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Privacy Protected Card -->
+      <div class="fa-privacy-card">
+        <div class="fa-priv-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="fa-priv-content">
+          <div class="fa-priv-header">
+            <h3 class="fa-priv-title">Privacy protected</h3>
+            <span class="fa-priv-dot" aria-hidden="true"></span>
+          </div>
+          <p class="fa-priv-desc">Exact farmer locations are hidden for security and privacy.</p>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <p class="fa-disclaimer" id="faDisclaimer" hidden>
+    Alerts show only disease name, crop, and a coarse area. No sender identities, exact locations, or scan details are shared.
+    Alerts expire automatically after 7 days.
+  </p>
+
+</main>
+
+<!-- Alert Detail Modal -->
+<div class="fa-modal-overlay" id="faDetailModal" hidden>
+  <div class="fa-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="faModalTitle">
+    <div class="fa-modal-header">
+      <div class="fa-modal-title-group">
+        <span class="fa-modal-tag" id="faModalTag">Alert Details</span>
+        <h2 id="faModalTitle" class="fa-modal-title"></h2>
+      </div>
+      <button class="fa-modal-close" id="faModalCloseBtn" type="button" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="fa-modal-body">
+      <div class="fa-detail-grid">
+        <div class="fa-detail-item">
+          <span class="fa-detail-label">Crop</span>
+          <span class="fa-detail-value" id="faModalCrop"></span>
+        </div>
+        <div class="fa-detail-item">
+          <span class="fa-detail-label">Risk Level</span>
+          <span class="fa-detail-value" id="faModalRisk"></span>
+        </div>
+        <div class="fa-detail-item">
+          <span class="fa-detail-label">Geographic Area</span>
+          <span class="fa-detail-value" id="faModalArea"></span>
+        </div>
+        <div class="fa-detail-item">
+          <span class="fa-detail-label">Received</span>
+          <span class="fa-detail-value" id="faModalReceived"></span>
+        </div>
+        <div class="fa-detail-item">
+          <span class="fa-detail-label">Expiration</span>
+          <span class="fa-detail-value" id="faModalExpires"></span>
+        </div>
+      </div>
+      <div class="fa-modal-privacy-callout">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Privacy Protection: Exact farmer locations and identities are strictly omitted to safeguard farm security.</span>
+      </div>
+    </div>
+    <div class="fa-modal-footer">
+      <a href="heatmap.html" class="btn btn-secondary btn-sm">View on Map</a>
+      <button class="btn btn-primary btn-sm" id="faModalDismissBtn" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer wrap">
+  <p>FOLIX is a diagnostic aid. For quarantine-notifiable diseases or large-scale outbreaks, always also contact your regional plant protection authority directly.</p>
+</footer>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+  if (typeof L === "undefined") {
+    document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
+  }
+</script>
+<script src="farmer-alerts.js"></script>
+</body>
+</html>

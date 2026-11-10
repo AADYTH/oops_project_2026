@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOLIX — Your account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="auth.css" />
+<meta name="theme-color" content="#1F3B2A" />
+</head>
+<body data-page="profile">
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="index.html" aria-label="FOLIX — Home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="22" height="22"><path d="M16 2C9 8 6 14 6 19a10 10 0 0 0 20 0c0-5-3-11-10-17Z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-name">FOLIX</span>
+    </a>
+    <nav class="header-nav" aria-label="Primary">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="how-it-works.html" data-nav="how">How it works</a>
+      <a href="scanner.html" data-nav="scanner">Scanner</a>
+      <a href="dashboard.html" data-nav="dashboard">Dashboard</a>
+      <a href="heatmap.html" data-nav="map">Disease Map</a>
+      <a href="farmer-alerts.html" data-nav="farmer-alerts">Nearby Alerts</a>
+    </nav>
+    <div class="header-tools">
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+<script src="protocol-check.js"></script>
+<script src="nav.js"></script>
+<script src="auth.js"></script>
+
+<main class="wrap auth-page">
+  <div class="auth-card" id="profileLoading">
+    <div class="auth-spinner" aria-hidden="true"></div>
+    <p class="auth-lede">Loading your account…</p>
+  </div>
+
+  <div class="auth-card" id="profileAuthRequired" hidden>
+    <h1>Log in to see your account</h1>
+    <p class="auth-lede">Your profile is only available when you're logged in.</p>
+    <a class="btn btn-primary" href="login.html?next=profile.html">Log in</a>
+  </div>
+
+  <div class="auth-card" id="profileError" hidden>
+    <h1>Couldn't load your account</h1>
+    <p class="auth-lede" id="profileErrorText">Something went wrong while reaching the FOLIX server.</p>
+    <button class="btn btn-secondary" id="profileRetry" type="button">Try again</button>
+  </div>
+
+  <div class="auth-card" id="profileCard" hidden>
+    <h1>Your account</h1>
+    <dl class="auth-profile">
+      <div><dt>Name</dt><dd id="profileName"></dd></div>
+      <div><dt>Email</dt><dd id="profileEmail"></dd></div>
+      <div><dt>Member since</dt><dd id="profileSince"></dd></div>
+    </dl>
+    <div class="auth-actions">
+      <a class="btn btn-secondary" href="dashboard.html">Dashboard</a>
+      <button class="btn btn-primary" id="profileLogout" type="button">Log out</button>
+    </div>
+  </div>
+</main>
+
+<script src="auth-pages.js"></script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+/* ==========================================================================
+   FOLIX — How it works page (Stage 2)
+
+   Loaded AFTER styles.css and uses only the Stage 1 design tokens.
+   Every class here is prefixed `hiw-` so nothing collides with the shared
+   stylesheet (which already owns unrelated `.how*` classes), and nothing in
+   this file can change the Home page or any other page.
+
+   Composition: left-aligned and editorial. Thin rings open the page and
+   close it. The one expressive moment is the process line, which draws
+   itself and lights each step as it goes. Everything else stays quiet.
+   ========================================================================== */
+
+/* ---------- Shared section rhythm ---------- */
+.hiw-section { padding: clamp(64px, 9vw, 120px) 0; }
+/* Sections that follow another padded block share its spacing instead of doubling it. */
+.hiw-section.hiw-section-flush { padding-top: 0; }
+
+.hiw-head { max-width: 640px; margin-bottom: clamp(40px, 6vw, 72px); }
+.hiw-h2 {
+  font-size: clamp(1.8rem, 3.6vw, 2.75rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  text-wrap: balance;
+  margin: 0 0 0.5em;
+}
+.hiw-head p { margin: 0; font-size: 1.02rem; }
+
+/* ==========================================================================
+   INTRO
+   ========================================================================== */
+.hiw-intro {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(80px, 13vw, 160px) 0 clamp(64px, 9vw, 112px);
+}
+.hiw-intro-inner { position: relative; z-index: 1; }
+
+.hiw-title {
+  font-size: clamp(2.5rem, 6.4vw, 5rem);
+  line-height: 1.06;
+  letter-spacing: -0.028em;
+  font-weight: 500;
+  max-width: 14ch;
+  text-wrap: balance;
+  margin: 0 0 clamp(28px, 4vw, 44px);
+}
+.hiw-lead {
+  margin: 0 0 18px;
+  max-width: 46ch;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.6;
+  color: var(--ink);
+}
+.hiw-note { margin: 0; max-width: 46ch; font-size: 0.95rem; }
+
+/* Thin concentric rings, cropped by the right edge. The layer fades them out
+   at the top and bottom of the section so they never end on a hard line. */
+.hiw-rings-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%);
+}
+.hiw-rings {
+  position: absolute;
+  top: 50%;
+  right: -16vw;
+  width: min(92vw, 900px);
+  height: auto;
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  pointer-events: none;
+  overflow: visible;
+}
+.hiw-rings circle.ring { fill: none; stroke: var(--leaf); stroke-width: 1; }
+.hiw-rings .ring-1 { stroke-opacity: 0.2; }
+.hiw-rings .ring-2 { stroke-opacity: 0.13; }
+.hiw-rings .ring-3 { stroke-opacity: 0.1; }
+.hiw-rings .ring-node { fill: var(--leaf); filter: drop-shadow(0 0 6px var(--glow-strong)); }
+@media (max-width: 700px) {
+  .hiw-rings { right: -38vw; width: 120vw; }
+  .hiw-rings circle.ring { stroke-width: 2.2; }
+}
+/* On phones and tablets the accent dot would land on the headline, so the rings go without it. */
+@media (max-width: 1000px) { .hiw-rings .ring-node { display: none; } }
+
+/* Page-load sequence: rings draw, then the copy rises. Runs once. */
+@keyframes hiw-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes hiw-draw { to { stroke-dashoffset: 0; } }
+@keyframes hiw-fade { to { opacity: 1; } }
+
+.hiw-rise { animation: hiw-rise 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation-delay: var(--d, 0s); }
+.hiw-rings circle.ring {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: hiw-draw 2.6s cubic-bezier(0.3, 0.6, 0.2, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+.hiw-rings .ring-node { opacity: 0; animation: hiw-fade 1.2s ease forwards; animation-delay: 2.3s; }
+
+/* ==========================================================================
+   WORKFLOW VIDEO SECTION (component styles live in workflow-video.css)
+   ========================================================================== */
+.hiw-video { padding: 0 0 clamp(72px, 10vw, 128px); }
+
+/* ==========================================================================
+   PROCESS
+   Desktop: a horizontal line with five nodes. Below 1000px it turns vertical.
+   The green fill draws segment by segment as the section scrolls into view.
+   Default styles = finished state; `.js [data-reveal]:not(.is-in)` = the
+   pre-reveal state, so with JS off the finished line simply shows.
+   ========================================================================== */
+.hiw-steps {
+  --gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: var(--gap);
+}
+
+.hiw-step { position: relative; padding-top: 44px; }
+.hiw-step:nth-child(1) { --i: 0; }
+.hiw-step:nth-child(2) { --i: 1; }
+.hiw-step:nth-child(3) { --i: 2; }
+.hiw-step:nth-child(4) { --i: 3; }
+.hiw-step:nth-child(5) { --i: 4; }
+
+/* Node */
+.hiw-step::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid var(--leaf);
+  background: var(--leaf);
+  transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.6s ease;
+  transition-delay: calc(0.2s + var(--i) * 0.75s);
+}
+/* The last step is where the line arrives: it keeps a soft green halo. */
+.hiw-step:last-child::before {
+  box-shadow: 0 0 0 5px rgba(31, 59, 42, 0.08), 0 0 14px var(--glow);
+}
+
+/* Segment from this node to the next: grey track + green fill. */
+.hiw-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 11px;
+  width: calc(100% + var(--gap) - 11px);
+  height: 1px;
+  background-color: var(--line);
+  background-image: linear-gradient(var(--leaf), var(--leaf));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 100% 100%;
+  transition: background-size 0.65s linear;
+  transition-delay: calc(0.3s + var(--i) * 0.75s);
+}
+
+/* Pre-reveal state */
+.js .hiw-steps[data-reveal]:not(.is-in) .hiw-step::before {
+  background-color: var(--canvas);
+  border-color: var(--soil);
+  box-shadow: none;
+}
+.js .hiw-steps[data-reveal]:not(.is-in) .hiw-step:not(:last-child)::after { background-size: 0% 100%; }
+
+.hiw-step-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.hiw-step-no {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--soil);
+}
+.hiw-step-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.hiw-step p { margin: 0; font-size: 0.94rem; max-width: 28ch; }
+
+/* Tablet and below: vertical line, label left / description right. */
+@media (max-width: 999px) {
+  .hiw-steps { display: block; }
+  .hiw-step {
+    display: grid;
+    grid-template-columns: minmax(150px, 210px) minmax(0, 1fr);
+    column-gap: 32px;
+    align-items: baseline;
+    padding: 0 0 44px 44px;
+  }
+  .hiw-step:last-child { padding-bottom: 0; }
+  .hiw-step::before { top: 5px; left: 0; }
+  .hiw-step:not(:last-child)::after {
+    top: 16px;
+    left: 5px;
+    width: 1px;
+    height: calc(100% - 11px);
+    background-position: center top;
+    background-size: 100% 100%;
+  }
+  .js .hiw-steps[data-reveal]:not(.is-in) .hiw-step:not(:last-child)::after { background-size: 100% 0%; }
+  .hiw-step-head { flex-direction: row; align-items: baseline; gap: 14px; margin-bottom: 0; }
+  .hiw-step p { max-width: 44ch; }
+}
+@media (max-width: 600px) {
+  .hiw-step { grid-template-columns: minmax(0, 1fr); padding-left: 36px; padding-bottom: 40px; }
+  .hiw-step p { margin-top: 8px; }
+}
+
+/* ==========================================================================
+   WHAT FOLIX PROVIDES
+   Hairline rules instead of cards. The rule lights green on hover.
+   ========================================================================== */
+.hiw-provides {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: clamp(40px, 6vw, 80px);
+  align-items: start;
+}
+.hiw-provides .hiw-head { margin-bottom: 0; }
+
+.hiw-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(32px, 5vw, 56px);
+}
+.hiw-feature {
+  position: relative;
+  border-top: 1px solid var(--line);
+  padding: 26px 0 44px;
+}
+.hiw-feature::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--leaf);
+  box-shadow: 0 0 6px 0 var(--glow);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.55s cubic-bezier(0.3, 0.6, 0.2, 1);
+}
+.hiw-feature:hover::before { transform: scaleX(1); }
+.hiw-feature h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+.hiw-feature p { margin: 0; font-size: 0.96rem; max-width: 34ch; }
+
+@media (max-width: 1000px) {
+  .hiw-provides { grid-template-columns: minmax(0, 1fr); }
+  .hiw-provides .hiw-head { margin-bottom: 8px; }
+}
+@media (max-width: 560px) {
+  .hiw-features { grid-template-columns: minmax(0, 1fr); }
+  .hiw-feature { padding-bottom: 32px; }
+}
+
+/* ==========================================================================
+   AI WITH UNCERTAINTY
+   ========================================================================== */
+.hiw-uncertain {
+  background: var(--card);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: clamp(64px, 9vw, 120px) 0;
+}
+.hiw-uncertain-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(40px, 7vw, 96px);
+  align-items: center;
+}
+.hiw-uncertain h2 {
+  font-size: clamp(2rem, 4.4vw, 3.4rem);
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+  font-weight: 500;
+  max-width: 16ch;
+  text-wrap: balance;
+  margin: 0 0 0.6em;
+}
+.hiw-uncertain p { margin: 0; font-size: 1.05rem; max-width: 44ch; }
+
+/* Ring that runs from a solid line into dots: clear evidence, then doubt.
+   Purely illustrative; it encodes no data. */
+.hiw-gauge {
+  justify-self: end;
+  width: min(100%, 340px);
+  height: auto;
+  aspect-ratio: 1;
+  overflow: visible;
+}
+.hiw-gauge .g-base { fill: none; stroke: var(--line); stroke-width: 1; }
+.hiw-gauge .g-inner { fill: none; stroke: var(--line); stroke-width: 1; }
+.hiw-gauge .g-solid { fill: none; stroke: var(--leaf); stroke-width: 1.6; stroke-linecap: round; }
+.hiw-gauge .g-dots {
+  fill: none;
+  stroke: var(--accent-soft);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 8;
+}
+.hiw-gauge .g-node { fill: var(--leaf); filter: drop-shadow(0 0 5px var(--glow-strong)); }
+
+.hiw-gauge .g-solid { stroke-dasharray: 1; stroke-dashoffset: 0; transition: stroke-dashoffset 1.8s cubic-bezier(0.3, 0.6, 0.2, 1); }
+.hiw-gauge .g-dots, .hiw-gauge .g-node { transition: opacity 1s ease; transition-delay: 1.5s; }
+.js .hiw-gauge[data-reveal]:not(.is-in) .g-solid { stroke-dashoffset: 1; }
+.js .hiw-gauge[data-reveal]:not(.is-in) .g-dots,
+.js .hiw-gauge[data-reveal]:not(.is-in) .g-node { opacity: 0; }
+
+@media (max-width: 860px) {
+  .hiw-uncertain-layout { grid-template-columns: minmax(0, 1fr); }
+  .hiw-gauge { justify-self: start; width: min(100%, 240px); }
+}
+
+/* ==========================================================================
+   CTA
+   ========================================================================== */
+.hiw-cta {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(80px, 12vw, 152px) 0;
+}
+.hiw-cta-inner { position: relative; z-index: 1; }
+.hiw-cta h2 {
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+  max-width: 14ch;
+  text-wrap: balance;
+  margin: 0;
+}
+/* CTA buttons flow in normal layout under the headline. (They previously reused
+   .hero-actions, which is absolutely positioned for the home-page hero footage
+   and made the buttons sit on top of the heading.) */
+.hiw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 32px;
+}
+.hiw-actions .btn { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.82rem; }
+.hiw-actions .btn-primary { padding: 15px 28px; }
+.hiw-actions .btn-ghost { padding: 6px 4px; }
+
+/* Same fade as the intro rings, so the ring never ends on a hard section edge. */
+.hiw-cta-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+.hiw-cta-ring {
+  position: absolute;
+  top: 50%;
+  right: -12vw;
+  width: min(70vw, 620px);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  border: 1px solid rgba(31, 59, 42, 0.16);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hiw-cta-ring::after {
+  content: "";
+  position: absolute;
+  inset: 16%;
+  border: 1px solid rgba(31, 59, 42, 0.1);
+  border-radius: 50%;
+}
+@media (max-width: 700px) { .hiw-cta-ring { right: -34vw; width: 96vw; } }
+
+.hiw-arrow { display: inline-block; transition: transform 0.2s ease; }
+.btn:hover .hiw-arrow { transform: translateX(3px); }
+
+/* ==========================================================================
+   Reduced motion: everything is simply present, in its finished state.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .hiw-rise { animation: none; }
+  .hiw-rings circle.ring { animation: none; stroke-dashoffset: 0; }
+  .hiw-rings .ring-node { animation: none; opacity: 1; }
+  .hiw-step::before,
+  .hiw-step:not(:last-child)::after,
+  .hiw-feature::before,
+  .hiw-gauge .g-solid,
+  .hiw-gauge .g-dots,
+  .hiw-gauge .g-node,
+  .hiw-arrow { transition: none; }
+  .js .hiw-steps[data-reveal]:not(.is-in) .hiw-step::before {
+    background-color: var(--leaf);
+    border-color: var(--leaf);
+  }
+  .js .hiw-steps[data-reveal]:not(.is-in) .hiw-step:not(:last-child)::after { background-size: 100% 100%; }
+  .js .hiw-gauge[data-reveal]:not(.is-in) .g-solid { stroke-dashoffset: 0; }
+  .js .hiw-gauge[data-reveal]:not(.is-in) .g-dots,
+  .js .hiw-gauge[data-reveal]:not(.is-in) .g-node { opacity: 1; }
+}

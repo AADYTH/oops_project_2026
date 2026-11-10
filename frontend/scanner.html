@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOLIX — Scanner</title>
+<meta name="description" content="Upload a crop image and let FOLIX examine visible signs of disease, plant stress, and severity." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="scanner-experience.css" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1F3B2A" />
+</head>
+<body data-page="scanner">
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="index.html" aria-label="FOLIX — Home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="22" height="22"><path d="M16 2C9 8 6 14 6 19a10 10 0 0 0 20 0c0-5-3-11-10-17Z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-name">FOLIX</span>
+    </a>
+    <nav class="header-nav" aria-label="Primary">
+      <a href="index.html" data-nav="home" data-i18n="nav.home">Home</a>
+      <a href="how-it-works.html" data-nav="how" data-i18n="nav.how">How it works</a>
+      <a href="scanner.html" data-nav="scanner" data-i18n="nav.scan">Scanner</a>
+      <a href="dashboard.html" data-nav="dashboard" data-i18n="nav.dashboard">Dashboard</a>
+      <a href="heatmap.html" data-nav="map" data-i18n="nav.heatmap">Disease Map</a>
+      <a href="farmer-alerts.html" data-nav="farmer-alerts">Nearby Alerts</a>
+    </nav>
+    <div class="header-tools">
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section id="scnRoot" class="scn" aria-label="Crop Scanner" data-state="empty">
+    <div class="scn-rings-layer" aria-hidden="true">
+      <svg viewBox="0 0 800 800" focusable="false">
+        <circle class="r1" cx="400" cy="400" r="380" />
+        <circle class="r2" cx="400" cy="400" r="300" />
+        <circle class="r3" cx="400" cy="400" r="220" />
+      </svg>
+    </div>
+
+    <div class="wrap scn-inner">
+
+      <header class="scn-intro">
+        <p class="hero-eyebrow">Scan your crop</p>
+        <h1 class="scn-title">See what FOLIX sees.</h1>
+        <p class="scn-lead">Upload a crop image and let FOLIX examine visible signs of disease, plant stress, and severity.</p>
+      </header>
+
+      <p id="scnLiveRegion" class="sr-only" role="status" aria-live="polite"></p>
+
+      <div class="scn-stage">
+
+        <!-- ===================== EMPTY / START STATE ===================== -->
+        <div class="scn-panel" id="scnPanelEmpty" data-scn-panel="empty">
+          <div class="scn-frame">
+            <span class="scn-frame-ring outer" aria-hidden="true"></span>
+            <span class="scn-corner tl" aria-hidden="true"></span>
+            <span class="scn-corner tr" aria-hidden="true"></span>
+            <span class="scn-corner bl" aria-hidden="true"></span>
+            <span class="scn-corner br" aria-hidden="true"></span>
+            <span class="scn-frame-ring" aria-hidden="true"></span>
+            <div class="scn-dropzone" id="scnDropzone" role="button" tabindex="0" aria-label="Upload a crop image. Drop a file here, or press Enter to choose one.">
+              <input type="file" id="scnFileInput" accept="image/jpeg,image/png,image/webp" class="sr-only" tabindex="-1" aria-hidden="true" />
+              <span class="scn-dz-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 16V4M12 4 7 9m5-5 5 5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <span class="scn-dz-text">Drop an image, or click to choose one</span>
+              <span class="scn-dz-hint">JPG · PNG · WEBP</span>
+            </div>
+          </div>
+
+          <div class="scn-empty-actions">
+            <span class="scn-or">or</span>
+            <button type="button" class="btn btn-secondary btn-small" id="scnUseCameraBtn">Use camera</button>
+          </div>
+
+          <p class="scn-inline-note" id="scnFileError" role="alert" hidden></p>
+        </div>
+
+        <!-- ===================== CAMERA CAPTURE ===================== -->
+        <div class="scn-panel" id="scnPanelCamera" data-scn-panel="camera" hidden>
+          <div class="scn-frame scn-camera-frame">
+            <span class="scn-frame-ring outer" aria-hidden="true"></span>
+            <span class="scn-corner tl" aria-hidden="true"></span>
+            <span class="scn-corner tr" aria-hidden="true"></span>
+            <span class="scn-corner bl" aria-hidden="true"></span>
+            <span class="scn-corner br" aria-hidden="true"></span>
+            <span class="scn-frame-ring" aria-hidden="true"></span>
+            <video id="scnCameraVideo" autoplay playsinline muted aria-label="Live camera preview"></video>
+            <canvas id="scnCameraCanvas" hidden></canvas>
+          </div>
+          <div class="scn-camera-controls">
+            <button type="button" class="btn btn-ghost btn-small" id="scnCameraCancelBtn">Cancel</button>
+            <button type="button" class="btn btn-primary" id="scnCameraCaptureBtn">Capture photo</button>
+          </div>
+        </div>
+
+        <!-- ===================== IMAGE PREVIEW STATE ===================== -->
+        <div class="scn-panel" id="scnPanelPreview" data-scn-panel="preview" hidden>
+          <div class="scn-frame">
+            <span class="scn-frame-ring outer" aria-hidden="true"></span>
+            <span class="scn-corner tl" aria-hidden="true"></span>
+            <span class="scn-corner tr" aria-hidden="true"></span>
+            <span class="scn-corner bl" aria-hidden="true"></span>
+            <span class="scn-corner br" aria-hidden="true"></span>
+            <span class="scn-frame-ring" aria-hidden="true"></span>
+            <img id="scnPreviewImg" alt="Selected crop photo" />
+          </div>
+          <div class="scn-preview-actions">
+            <button type="button" class="btn btn-secondary btn-small" id="scnChangeBtn">Change image</button>
+            <button type="button" class="btn btn-ghost btn-small" id="scnRemoveBtn">Remove</button>
+            <button type="button" class="btn btn-primary btn-large scn-analyze-btn" id="scnAnalyzeBtn">Analyze Crop</button>
+          </div>
+        </div>
+
+        <!-- ===================== ANALYZING STATE ===================== -->
+        <div class="scn-panel" id="scnPanelAnalyzing" data-scn-panel="analyzing" hidden>
+          <div class="scn-frame">
+            <span class="scn-orbit" aria-hidden="true"></span>
+            <span class="scn-frame-ring outer" aria-hidden="true"></span>
+            <span class="scn-corner tl" aria-hidden="true"></span>
+            <span class="scn-corner tr" aria-hidden="true"></span>
+            <span class="scn-corner bl" aria-hidden="true"></span>
+            <span class="scn-corner br" aria-hidden="true"></span>
+            <span class="scn-frame-ring" aria-hidden="true"></span>
+            <img id="scnAnalyzingImg" alt="" aria-hidden="true" />
+            <span class="scn-scan-sweep" aria-hidden="true"></span>
+          </div>
+          <div class="scn-analyzing-text">
+            <p class="scn-analyzing-title">Analyzing crop…</p>
+            <p class="scn-analyzing-note">FOLIX is examining the visible plant features.</p>
+          </div>
+          <div class="scn-analyzing-actions">
+            <button type="button" class="btn btn-ghost btn-small" id="scnCancelAnalysisBtn">Cancel</button>
+          </div>
+        </div>
+
+        <!-- ===================== RESULT STATE ===================== -->
+        <div class="scn-panel" id="scnPanelResult" data-scn-panel="result" hidden>
+          <div class="scn-result-panel">
+            <div id="scnResultContent"><!-- populated by FolixScanner.renderDiagnosis(result) --></div>
+          </div>
+          <p class="scn-disclaimer">FOLIX provides an AI-assisted assessment based on visible evidence. It is not a laboratory diagnosis.</p>
+        </div>
+
+        <!-- ===================== UNCERTAIN / HUMAN REVIEW STATE ===================== -->
+        <div class="scn-panel" id="scnPanelUncertain" data-scn-panel="uncertain" hidden>
+          <div class="scn-uncertain-panel">
+            <div id="scnUncertainContent"><!-- populated by FolixScanner.renderUncertain(result) --></div>
+          </div>
+          <p class="scn-disclaimer">FOLIX provides an AI-assisted assessment based on visible evidence. It is not a laboratory diagnosis.</p>
+        </div>
+
+
+        <!-- ===================== ANALYSIS ERROR STATE (Stage 4) =====================
+             Shown when the analysis request itself fails (network, server, rate limit, timeout, bad file).
+             This is NOT a diagnosis: it never shows crop/disease fields. Reuses the uncertain-panel styling. -->
+        <div class="scn-panel" id="scnPanelError" data-scn-panel="error" hidden>
+          <div class="scn-uncertain-panel" role="alert">
+            <span class="scn-uncertain-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="30" height="30"><circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M16 10.5v6.2M16 21v.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <h2 class="scn-uncertain-title" id="scnErrorTitle" tabindex="-1">FOLIX couldn't complete the analysis.</h2>
+            <p class="scn-uncertain-lead" id="scnErrorMessage">Something went wrong. Please try again.</p>
+            <div class="scn-actions-row">
+              <button type="button" class="btn btn-primary scn-action-btn" id="scnErrorRetryBtn">Try Again</button>
+              <button type="button" class="btn btn-secondary scn-action-btn" id="scnErrorChooseBtn">Choose Another Image</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Lightbox modal for full size crop image view -->
+    <div id="scnImageModal" class="scn-modal" hidden aria-hidden="true" role="dialog" aria-label="Original crop photo">
+      <div class="scn-modal-backdrop" id="scnModalBackdrop"></div>
+      <div class="scn-modal-container scn-image-modal-dialog">
+        <button type="button" class="scn-modal-close scn-image-modal-close" id="scnModalCloseBtn" aria-label="Close photo preview">✕</button>
+        <img id="scnModalImg" class="scn-image-modal-img" src="" alt="Selected crop photo full size" />
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<footer class="site-footer wrap">
+  <p>FOLIX is a diagnostic aid. For quarantine-notifiable diseases or large-scale outbreaks, always also contact your regional plant protection authority directly.</p>
+</footer>
+
+<script src="protocol-check.js"></script>
+<script src="i18n.js"></script>
+<script src="nav.js"></script>
+<script src="auth.js"></script>
+<!-- On-device inference (best-effort, optional): only used if a model is installed at ./model/.
+     onnx-classifier.js already handles its own absence (typeof ort === "undefined") if this fails to load offline. -->
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
+<script src="onnx-classifier.js"></script>
+<script src="offline-classifier.js"></script>
+<script src="scanner-experience.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch((err) => console.warn("Service worker registration failed:", err));
+    });
+  }
+</script>
+</body>
+</html>

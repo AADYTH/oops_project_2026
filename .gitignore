@@ -1,0 +1,62 @@
+
+# Compiled Java files
+*.class
+*.jar
+*.war
+*.ear
+
+# Build output
+bin/
+out/
+build/
+target/
+dist/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Java build tools
+.gradle/
+.mvn/wrapper/maven-wrapper.jar
+
+# Sensitive files
+cookie.txt
+*.env
+.env
+.env.*
+
+# Backups and temporary folders
+.backup_scanner_redesign/
+scratch/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Logs
+*.log

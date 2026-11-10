@@ -1,0 +1,73 @@
+/* ---------- FOLIX farmer account pages (login / register / profile) ----------
+   Reuses the global design tokens from styles.css. No new colors or fonts. */
+
+.auth-page { padding-top: 56px; padding-bottom: 96px; }
+
+.auth-card {
+  max-width: 440px;
+  margin: 0 auto 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  padding: 32px;
+}
+.auth-card h1 { margin: 0 0 6px; font-size: 1.7rem; }
+.auth-lede { margin: 0 0 22px; color: var(--ink-soft); }
+.auth-card[hidden] { display: none; }
+
+.auth-field { margin-bottom: 16px; }
+.auth-field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+.auth-field input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: #fff;
+  color: var(--ink);
+}
+.auth-field input:focus-visible { outline: 2px solid var(--leaf-dark); outline-offset: 1px; }
+.auth-field input[aria-invalid="true"] { border-color: var(--clay); }
+.auth-hint { margin: 6px 0 0; font-size: 0.8rem; color: var(--ink-soft); }
+.auth-field-error { margin: 6px 0 0; font-size: 0.82rem; color: var(--clay); }
+.auth-field-error[hidden], .auth-error[hidden], .auth-hint[hidden] { display: none; }
+
+.auth-error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  color: var(--clay);
+  background: var(--clay-soft);
+  border-radius: var(--radius-card);
+}
+
+.auth-alt { margin: 20px 0 0; font-size: 0.9rem; text-align: center; color: var(--ink-soft); }
+.auth-alt a { color: var(--leaf-dark); font-weight: 600; }
+
+.role-choice-options { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.role-choice-options .btn { width: 100%; box-sizing: border-box; }
+
+.auth-profile { margin: 0 0 24px; }
+.auth-profile > div { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.auth-profile dt { font-family: var(--font-display); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 4px; }
+.auth-profile dd { margin: 0; word-break: break-word; }
+.auth-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.auth-spinner {
+  width: 28px; height: 28px; margin: 0 0 14px;
+  border: 3px solid var(--line); border-top-color: var(--leaf);
+  border-radius: 50%; animation: auth-spin 0.8s linear infinite;
+}
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 560px) { .auth-card { padding: 22px; } }
+
+/* Hide navigation bar and header tools throughout the login/register process */
+body[data-page="login"] .header-nav,
+body[data-page="login"] .header-tools,
+body[data-page="register"] .header-nav,
+body[data-page="register"] .header-tools {
+  display: none !important;
+}

@@ -1,0 +1,77 @@
+/* ---------- FOLIX Agricultural Network (Stage 6D) ----------
+   Reuses the global design tokens from styles.css and the .auth-card / .auth-field /
+   .auth-actions / .btn patterns from auth.css. No new colors or fonts. */
+
+.network-page { padding-top: 56px; padding-bottom: 96px; }
+
+.network-eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--leaf);
+  margin: 0 0 10px;
+}
+.network-page > .network-intro { margin-bottom: 32px; }
+.network-page h1 { margin: 0 0 8px; }
+
+.network-section { margin: 0 auto 32px; max-width: 720px; }
+.network-section h2 { margin: 0 0 4px; font-size: 1.3rem; }
+.network-section .network-section-lede { margin: 0 0 18px; color: var(--ink-soft); }
+
+/* Reuses .auth-card for the profile panel's outer frame; this adds only what auth.css lacks. */
+.network-card { max-width: 720px; }
+
+.network-empty {
+  text-align: center;
+  padding: 20px 8px;
+}
+.network-empty p { margin: 0 auto 16px; }
+
+.network-field-select {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: #fff;
+  color: var(--ink);
+}
+.network-field-select:focus-visible { outline: 2px solid var(--leaf-dark); outline-offset: 1px; }
+
+.network-updated { margin: 0 0 20px; font-size: 0.82rem; color: var(--ink-soft); }
+
+/* ---------- Support directory ---------- */
+
+.directory-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+
+.directory-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  padding: 16px 18px;
+}
+.directory-item-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.directory-name { font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; }
+.directory-category {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--leaf-dark);
+  background: #F5F1E4;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+.directory-org { margin: 2px 0 0; color: var(--ink-soft); font-size: 0.92rem; }
+.directory-meta { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; }
+.directory-meta a { color: var(--leaf-dark); }
+
+@media (max-width: 560px) {
+  .directory-item-top { flex-direction: column; align-items: flex-start; }
+}

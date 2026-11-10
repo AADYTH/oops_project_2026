@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOLIX — Authority</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="auth.css" />
+<link rel="stylesheet" href="authority.css" />
+<meta name="theme-color" content="#1F3B2A" />
+</head>
+<body data-page="authority-home" data-auth-widget="off">
+
+<!--
+  The Authority area. Same header/typography/tokens as the rest of FOLIX, but it deliberately has NONE
+  of the farmer pages (Scanner, Dashboard, Disease Map, Nearby Alerts) in its navigation.
+
+  Role-based rendering: nothing below the header exists in the DOM until authority.js has verified
+  the Authority ID + API key against the existing /api/v1/authorities/* endpoints. The <template>
+  elements are inert (never rendered) until the script clones them for a signed-in Authority.
+  This page deliberately does not load the farmer session client.
+-->
+<header class="site-header">
+  <div class="wrap header-row">
+    <span class="brand" aria-label="FOLIX — Authority">
+      <img class="brand-logo" src="assets/folix-logo.png" alt="FOLIX" />
+    </span>
+    <nav class="header-nav" id="authorityNav" aria-label="Authority"></nav>
+    <div class="header-tools">
+      <div id="authorityAccount"></div>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+<script src="protocol-check.js"></script>
+<script src="nav.js"></script>
+
+<main class="wrap authority-page" id="authorityRoot"></main>
+
+<!-- Sign-in gate (shown while there is no verified Authority session) -->
+<template id="tplSignIn">
+  <div class="auth-card" id="authoritySignInCard" style="max-width:480px; margin:20px auto;">
+    <div class="authority-hero-badge"><span class="pulse-dot"></span> Official Plant Protection Authority Portal</div>
+    <h1 style="font-size:1.85rem; margin-bottom:6px;">Authority sign-in</h1>
+    <p class="auth-lede" style="margin-bottom:20px;">Sign in with your office ID and API key to monitor disease cases and broadcast alerts.</p>
+    <form id="authoritySignInForm" novalidate>
+      <div class="auth-field">
+        <label for="authorityId">Authority ID</label>
+        <input id="authorityId" name="authorityId" type="number" inputmode="numeric" placeholder="e.g. 42" required />
+      </div>
+      <div class="auth-field">
+        <label for="authorityKey">API key</label>
+        <input id="authorityKey" name="authorityKey" type="password" autocomplete="off" placeholder="The key you received at registration" required />
+      </div>
+      <p class="auth-error" id="authoritySignInError" role="alert" hidden></p>
+      <button class="btn btn-primary btn-large" id="authoritySignInSubmit" type="submit" style="width:100%; margin-top:8px;">Sign in to Console</button>
+    </form>
+    <p class="auth-alt" style="margin-top:20px;"><a href="login.html">‹ Choose a different account type</a></p>
+    <p class="auth-alt">No key yet? <a href="#register" id="authorityGoToRegister">Register your office</a></p>
+  </div>
+</template>
+
+<!-- Separate Registration (shown when visitor wants to register a new office) -->
+<template id="tplRegister">
+  <div class="auth-card authority-reg-card" id="authorityRegisterCard" style="margin:20px auto;">
+    <div class="authority-hero-badge"><span class="pulse-dot"></span> Office Registration</div>
+    <h1 style="font-size:1.85rem; margin-bottom:6px;">Register your office</h1>
+    <p class="auth-lede" style="margin-bottom:20px;">Register your agriculture extension office or plant protection center to receive an Authority ID and API key.</p>
+
+    <form id="authorityRegisterForm" novalidate>
+      <div class="auth-field">
+        <label for="regName">Office name *</label>
+        <input id="regName" name="name" type="text" placeholder="e.g. Krishi Vigyan Kendra, Malappuram" required />
+        <p class="auth-field-error" id="regNameError" hidden></p>
+      </div>
+
+      <div class="authority-field-row">
+        <div class="auth-field">
+          <label for="regDistrict">District *</label>
+          <input id="regDistrict" name="district" type="text" placeholder="e.g. Malappuram" required />
+          <p class="auth-field-error" id="regDistrictError" hidden></p>
+        </div>
+        <div class="auth-field">
+          <label for="regState">State *</label>
+          <input id="regState" name="state" type="text" placeholder="e.g. Kerala" required />
+          <p class="auth-field-error" id="regStateError" hidden></p>
+        </div>
+      </div>
+
+      <div class="auth-field">
+        <label for="regAddress">Office address *</label>
+        <input id="regAddress" name="rawAddress" type="text" placeholder="e.g. KCAET Campus, Tavanur, Malappuram, Kerala" required />
+        <p class="auth-field-error" id="regAddressError" hidden></p>
+      </div>
+
+      <div class="authority-field-row">
+        <div class="auth-field">
+          <label for="regLat">Latitude <span class="auth-hint" style="display:inline; margin:0;">(optional)</span></label>
+          <input id="regLat" name="latitude" type="number" step="any" placeholder="e.g. 11.048" />
+        </div>
+        <div class="auth-field">
+          <label for="regLon">Longitude <span class="auth-hint" style="display:inline; margin:0;">(optional)</span></label>
+          <input id="regLon" name="longitude" type="number" step="any" placeholder="e.g. 76.074" />
+        </div>
+      </div>
+
+      <div class="authority-field-row">
+        <div class="auth-field">
+          <label for="regPhone">Phone number</label>
+          <input id="regPhone" name="phoneNumber" type="tel" placeholder="e.g. +91 9447123456" />
+        </div>
+        <div class="auth-field">
+          <label for="regEmail">Email address</label>
+          <input id="regEmail" name="email" type="email" placeholder="e.g. kvk.malappuram@gov.in" />
+        </div>
+      </div>
+
+      <div class="auth-field">
+        <label for="regWebhook">Webhook URL <span class="auth-hint" style="display:inline; margin:0;">(optional, for alerts)</span></label>
+        <input id="regWebhook" name="webhookUrl" type="url" placeholder="https://..." />
+      </div>
+
+      <p class="auth-error" id="authorityRegisterError" role="alert" hidden></p>
+      <button class="btn btn-primary btn-large" id="authorityRegisterSubmit" type="submit" style="width:100%; margin-top:8px;">Register office</button>
+    </form>
+
+    <div class="authority-success-card" id="authorityRegisterSuccess" hidden>
+      <h3>Registration successful!</h3>
+      <p id="regSuccessMessage" style="margin:0 0 10px; font-size:0.9rem;"></p>
+      <p style="margin:0 0 4px; font-size:0.85rem; font-weight:700;">Your Authority ID:</p>
+      <p id="regSuccessId" style="margin:0 0 12px; font-family:monospace; font-size:1.15rem; font-weight:700; color:var(--leaf-dark);"></p>
+      <p style="margin:0 0 4px; font-size:0.85rem; font-weight:700;">Your API key (save this now — it will not be shown again):</p>
+      <div id="regSuccessKey" class="authority-key-box"></div>
+      <button type="button" class="btn btn-primary" id="autoSignInBtn" style="width:100%;">Sign in now with these credentials</button>
+    </div>
+
+    <p class="auth-alt"><a href="#signin" id="authorityGoToSignIn">‹ Already registered? Sign in with office ID</a></p>
+    <p class="auth-alt"><a href="login.html">‹ Choose a different account type</a></p>
+  </div>
+</template>
+
+<!-- Overview: Authority Command Center Hub -->
+<template id="tplHome">
+  <div class="authority-heading">
+    <div class="authority-hero-badge"><span class="pulse-dot"></span> Extension Command Console</div>
+    <h1>Authority dashboard</h1>
+    <p>Plant biosecurity response, field outbreak surveillance, and district farmer jurisdiction.</p>
+  </div>
+
+  <!-- Real Data Metrics Row -->
+  <div class="authority-metrics-strip" id="authorityHomeMetrics">
+    <div class="authority-metric-card">
+      <div class="metric-icon-wrap">🚨</div>
+      <div class="metric-info">
+        <span class="metric-val" id="homeCountAlerts">—</span>
+        <span class="metric-label">Active Alerts</span>
+      </div>
+    </div>
+    <div class="authority-metric-card">
+      <div class="metric-icon-wrap">📑</div>
+      <div class="metric-info">
+        <span class="metric-val" id="homeCountForward">—</span>
+        <span class="metric-label">Forwarded Cases</span>
+      </div>
+    </div>
+    <div class="authority-metric-card">
+      <div class="metric-icon-wrap">👨‍🌾</div>
+      <div class="metric-info">
+        <span class="metric-val" id="homeCountFarmers">—</span>
+        <span class="metric-label">Farmers Listed</span>
+      </div>
+    </div>
+    <div class="authority-metric-card">
+      <div class="metric-icon-wrap">⚠️</div>
+      <div class="metric-info">
+        <span class="metric-val" id="homeCountRisk">—</span>
+        <span class="metric-label">Epidemic Risks</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- The Three Main Options -->
+  <div class="authority-options">
+    <a class="authority-option" href="#cases">
+      <div>
+        <div class="authority-option-header">
+          <div class="authority-option-icon">🚨</div>
+          <h2>Your Cases</h2>
+        </div>
+        <p>Disease alerts and outbreak reports sent to your office. Acknowledge them, dispatch farmer warnings, and mark them resolved.</p>
+      </div>
+      <span class="authority-option-cta">Open cases →</span>
+    </a>
+    <a class="authority-option" href="#forward">
+      <div>
+        <div class="authority-option-header">
+          <div class="authority-option-icon">📑</div>
+          <h2>Forwarded Cases</h2>
+        </div>
+        <p>Diagnostic reports farmers have manually forwarded to Agricultural Network support contacts for specialist advice.</p>
+      </div>
+      <span class="authority-option-cta">Open forwarded cases →</span>
+    </a>
+    <a class="authority-option" href="#farmers">
+      <div>
+        <div class="authority-option-header">
+          <div class="authority-option-icon">👨‍🌾</div>
+          <h2>Farmers</h2>
+        </div>
+        <p>Registered farmers and active crop profiles under your district jurisdiction. Access direct advisory and contact channels.</p>
+      </div>
+      <span class="authority-option-cta">View farmers →</span>
+    </a>
+  </div>
+</template>
+
+<!-- Your Cases -->
+<template id="tplAlerts">
+  <div class="authority-heading" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+    <div>
+      <div class="authority-hero-badge"><span class="pulse-dot"></span> Live Outbreak Stream</div>
+      <h1>Your cases</h1>
+      <p>Disease alerts and outbreak cases sent to your office.</p>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button type="button" class="btn btn-secondary" id="authorityExportAlertsBtn">📄 Export PDF Report</button>
+      <button type="button" class="btn btn-primary" id="authorityBroadcastNewBtn">📢 Alert Nearby Farmers</button>
+    </div>
+  </div>
+
+  <div id="authorityBroadcastFormCard" class="authority-card" style="margin-bottom: 24px; padding: 22px 24px; border: 1px solid var(--accent-soft, #4C7A5B); border-radius: var(--radius-card, 12px); background: #FAFDF8; box-shadow: 0 4px 12px rgba(31,59,42,0.06);" hidden>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+      <h2 style="margin:0; font-size:1.18rem; color:var(--leaf-dark, #14261B);">📢 Broadcast Outbreak Advisory to Nearby Farmers</h2>
+      <button type="button" id="authorityBroadcastCloseX" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--ink-soft, #64748b);">✕</button>
+    </div>
+    <p style="margin: 0 0 16px; font-size:0.9rem; color:var(--ink-soft, #64748b);">Dispatch an emergency epidemic alert or pest advisory directly to registered farmers in your jurisdiction.</p>
+    <form id="authorityBroadcastForm">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 14px;">
+        <div class="auth-field" style="margin-bottom:0;">
+          <label for="broadcastDisease" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px;">Disease / Pest Name *</label>
+          <input type="text" id="broadcastDisease" required placeholder="e.g. Late blight" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid var(--line, #cbd5e1); border-radius:6px;" />
+        </div>
+        <div class="auth-field" style="margin-bottom:0;">
+          <label for="broadcastCrop" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px;">Crop Name *</label>
+          <input type="text" id="broadcastCrop" required placeholder="e.g. Potato" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid var(--line, #cbd5e1); border-radius:6px;" />
+        </div>
+      </div>
+      <div style="margin-bottom: 14px;">
+        <label for="broadcastSeverity" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px;">Spread Risk / Severity (%)</label>
+        <input type="number" id="broadcastSeverity" min="1" max="100" value="80" style="width:120px; box-sizing:border-box; padding:8px 12px; border:1px solid var(--line, #cbd5e1); border-radius:6px;" />
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label for="broadcastAdvisory" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px;">Advisory & Precautions for Farmers</label>
+        <textarea id="broadcastAdvisory" rows="3" placeholder="e.g. Favorable weather conditions for fungal spread. Inspect foliage and spray copper fungicide promptly." style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid var(--line, #cbd5e1); border-radius:6px; font-family:inherit;"></textarea>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button type="submit" class="btn btn-primary" id="authorityBroadcastSubmit">Send Alert to Farmers</button>
+        <button type="button" class="btn btn-secondary" id="authorityBroadcastCancel">Cancel</button>
+      </div>
+      <p id="authorityBroadcastMsg" style="margin-top:12px; font-weight:500;" hidden></p>
+    </form>
+  </div>
+
+  <section class="authority-panel" aria-live="polite">
+    <div class="authority-live-bar">
+      <span class="pulse-dot"></span>
+      <p class="authority-live" id="authorityLive">Auto-refreshing…</p>
+    </div>
+    <p class="authority-error" id="authorityAlertsError" role="alert" hidden></p>
+    <div id="authorityAlertsList"></div>
+  </section>
+</template>
+
+<!-- Forwarded Cases -->
+<template id="tplForward">
+  <div class="authority-heading" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+    <div>
+      <div class="authority-hero-badge"><span class="pulse-dot"></span> Diagnostic Forwarding Queue</div>
+      <h1>Forwarded cases</h1>
+      <p>Cases farmers have manually forwarded to an Agricultural Network support contact.</p>
+    </div>
+    <div>
+      <button type="button" class="btn btn-secondary" id="authorityExportForwardBtn">📄 Export PDF Report</button>
+    </div>
+  </div>
+  <section class="authority-panel" aria-live="polite">
+    <div class="authority-live-bar">
+      <span class="pulse-dot"></span>
+      <p class="authority-live" id="authorityForwardLive">Auto-refreshing…</p>
+    </div>
+    <p class="authority-error" id="authorityForwardError" role="alert" hidden></p>
+    <div id="authorityForwardList"></div>
+  </section>
+</template>
+
+<!-- Farmers in Area -->
+<template id="tplFarmers">
+  <div class="authority-heading" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+    <div>
+      <div class="authority-hero-badge"><span class="pulse-dot"></span> District Jurisdiction</div>
+      <h1>Farmers in your area</h1>
+      <p>Registered farmers and active agricultural profiles under your district jurisdiction.</p>
+    </div>
+    <div>
+      <button type="button" class="btn btn-secondary" id="authorityExportFarmersBtn">📄 Export PDF Report</button>
+    </div>
+  </div>
+  <section class="authority-panel">
+    <div class="authority-farmers-bar">
+      <input type="search" class="authority-farmers-search" id="authorityFarmerSearch" placeholder="Search by farmer name, village, or crop…" aria-label="Search farmers" />
+      <select class="authority-farmers-filter" id="authorityAreaFilter" aria-label="Filter by district">
+        <option value="ALL">All Districts</option>
+      </select>
+      <span class="authority-farmers-count" id="authorityFarmerCount"></span>
+    </div>
+    <div id="authorityFarmersList" class="authority-farmer-grid"></div>
+  </section>
+</template>
+
+<script src="authority.js"></script>
+</body>
+</html>

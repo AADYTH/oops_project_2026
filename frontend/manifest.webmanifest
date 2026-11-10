@@ -1,0 +1,24 @@
+{
+  "name": "FOLIX — AI Crop Disease Diagnosis",
+  "short_name": "FOLIX",
+  "description": "Field diagnosis for crop diseases, with offline support for low-connectivity areas.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F1F4EB",
+  "theme_color": "#1F3B2A",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

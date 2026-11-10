@@ -1,0 +1,95 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cropscanner
+      POSTGRES_USER: cropscanner
+      POSTGRES_PASSWORD: change-me-in-production
+    ports:
+      - "5432:5432"
+    volumes:
+      - cropscanner-db-data:/var/lib/postgresql/data
+      # Postgres runs every *.sql file here, in alphabetical filename order, exactly once —
+      # only on a brand-new (empty) data volume. Keeps every stage6*.sql migration applied
+      # automatically instead of needing a manual `psql < file.sql` step per file.
+      - ./backend/db:/docker-entrypoint-initdb.d:ro
+
+  inference-service:
+    build: ./inference-service
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_ID: ${MODEL_ID:-linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification}
+      # OFF by default — see main.py's ENSEMBLE_ENABLED docstring: nobody has actually run
+      # scripts/benchmark_models.py against real held-out data in this build to prove a 4-model panel
+      # beats one model, so the honest default is ONE model. Set to "true" once you've run that
+      # benchmark and it shows a real, repeatable improvement.
+      ENSEMBLE_ENABLED: ${ENSEMBLE_ENABLED:-false}
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/cropscanner
+      DB_USERNAME: cropscanner
+      DB_PASSWORD: change-me-in-production
+      INFERENCE_SERVICE_URL: http://inference-service:8000
+      FRONTEND_ORIGIN: http://localhost:5173
+      # FOLIX farmer login cookie (Stage 6A). The prod profile makes it Secure (HTTPS only); this compose file
+      # serves plain http://localhost, so it is switched off here. Set to "true" behind HTTPS.
+      FOLIX_AUTH_COOKIE_SECURE: ${FOLIX_AUTH_COOKIE_SECURE:-false}
+      # Empty by default so docker-compose works out of the box. Since
+      # require-api-key defaults to true in the prod profile with no keys
+      # configured, every request would 401 until you set at least one key
+      # here (comma-separated) and pass it as X-Api-Key from your client —
+      # or set RATE_LIMIT_PER_MINUTE etc. Simplest for local docker-compose
+      # testing: leave this blank and instead override
+      # cropscanner.security.require-api-key=false via an extra env var.
+      API_KEYS: ""
+      # Off by default here purely so `docker compose up` works immediately
+      # with no extra setup. Set to "true" + provide API_KEYS above once you
+      # have a client you control to embed a key into.
+      CROPSCANNER_SECURITY_REQUIREAPIKEY: "false"
+      # --- Gemini second opinion (README "Gemini API key pool" / "No paid fallback") ---
+      # OFF by default: CropGuard must run with zero Gemini access (README "Cost requirement").
+      # Set CROPSCANNER_GEMINI_ENABLED=true and provide at least one free-tier key below to turn it on.
+      # Keys never live in this file, in git, or in frontend code — only here, as environment
+      # variables passed to the backend container. Provide EITHER a comma-separated GEMINI_API_KEYS,
+      # OR individual GEMINI_KEY_1 / GEMINI_KEY_2 / ... GEMINI_KEY_20 (both are merged if both are set).
+      # NOTE: docker-compose only passes through env vars explicitly listed here — if you use the
+      # individual GEMINI_KEY_N form instead of GEMINI_API_KEYS, add each one as its own line below,
+      # e.g. `GEMINI_KEY_1: ${GEMINI_KEY_1:-}`.
+      CROPSCANNER_GEMINI_ENABLED: ${CROPSCANNER_GEMINI_ENABLED:-false}
+      GEMINI_API_KEYS: ${GEMINI_API_KEYS:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.1-flash-lite}
+      # --- FOLIX Scanner (POST /api/scan/analyze) ---
+      # Uses the SAME key variables as above (GEMINI_API_KEYS / GEMINI_KEY_N) but only the FIRST key, and it is
+      # active whenever a key is present — it does not depend on CROPSCANNER_GEMINI_ENABLED (legacy switch).
+      # Set the key in your shell or an untracked .env file; never commit it.
+      FOLIX_GEMINI_MODEL: ${FOLIX_GEMINI_MODEL:-gemini-3.5-flash-lite}
+      FOLIX_GEMINI_THINKING_LEVEL: ${FOLIX_GEMINI_THINKING_LEVEL:-}
+      # --- Pl@ntNet online fallback (used only when the Gemini call itself fails) ---
+      # Same rule as the Gemini keys above: docker-compose only passes through env vars listed
+      # here, so PLANTNET_API_KEY must be forwarded explicitly. Set it in your shell or an
+      # untracked .env file; never commit it. Leave unset to keep the fallback disabled — a
+      # failed Gemini call then surfaces exactly as it did before this fallback existed.
+      PLANTNET_API_KEY: ${PLANTNET_API_KEY:-}
+    depends_on:
+      - db
+      - inference-service
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "5173:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+
+volumes:
+  cropscanner-db-data:

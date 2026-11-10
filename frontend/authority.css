@@ -1,0 +1,621 @@
+/* ---------- FOLIX Authority Command Center (authority.html) ----------
+   Elevated government & plant-protection authority dashboard.
+   Reuses the global design tokens from styles.css and the form/card primitives from auth.css.
+   Strictly utilizes genuine backend data and stays true to the FOLIX color palette. */
+
+.authority-page { padding-top: 36px; padding-bottom: 96px; }
+.authority-page .auth-card[hidden] { display: none; }
+
+/* Authority Command Center Hero Header */
+.authority-heading { margin-bottom: 24px; }
+.authority-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--leaf-dark);
+  background: #E5EEDD;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 10px;
+}
+.authority-hero-badge .pulse-dot {
+  width: 7px;
+  height: 7px;
+  background: #15803d;
+  border-radius: 50%;
+  animation: live-dot-pulse 1.8s infinite;
+}
+.authority-heading h1 { margin-bottom: 6px; font-size: clamp(1.8rem, 3.2vw, 2.4rem); }
+.authority-heading p { margin: 0; font-size: 1.02rem; color: var(--ink-soft); max-width: 72ch; }
+
+/* Live Data KPI Metrics Strip (Strictly Real Data) */
+.authority-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.authority-metric-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+.authority-metric-card:hover {
+  border-color: var(--accent-soft);
+  transform: translateY(-1px);
+}
+.metric-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #E5EEDD;
+  color: var(--leaf-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+.metric-info { display: flex; flex-direction: column; }
+.metric-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--font-display);
+  line-height: 1.1;
+}
+.metric-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+/* Overview: Three Main Command Cards */
+.authority-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.authority-option {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 26px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 2px 6px rgba(31, 59, 42, 0.03);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.authority-option:hover, .authority-option:focus-visible {
+  border-color: var(--leaf);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(31, 59, 42, 0.08);
+}
+.authority-option-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.authority-option-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #E5EEDD;
+  color: var(--leaf-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+.authority-option h2 { font-size: 1.25rem; margin: 0; color: var(--leaf-dark); }
+.authority-option p { margin: 0 0 16px; font-size: 0.92rem; color: var(--ink-soft); line-height: 1.5; }
+.authority-option-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--leaf-dark);
+  margin-top: auto;
+}
+
+/* Panels (Your Alerts / Forward Case / Farmers) */
+.authority-panel {
+  padding: 24px 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+}
+.authority-panel + .authority-panel { margin-top: 22px; }
+
+/* Real-time Indicator Pill */
+.authority-live-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+  padding: 6px 12px;
+  background: #F1F4EB;
+  border-radius: var(--radius-pill);
+  width: fit-content;
+}
+.authority-live { margin: 0; font-size: 0.8rem; color: var(--ink-soft); font-weight: 500; }
+.authority-empty {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin: 0;
+}
+.authority-error {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  background: var(--clay-soft);
+  border: 1px solid var(--clay);
+  border-radius: var(--radius-card);
+  font-size: 0.9rem;
+  color: var(--clay);
+  font-weight: 500;
+}
+.authority-error[hidden] { display: none; }
+
+/* Outbreak Alert Card Items */
+.authority-alert {
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: #fff;
+  margin-bottom: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.authority-alert:hover {
+  border-color: var(--accent-soft);
+  box-shadow: 0 2px 8px rgba(31, 59, 42, 0.05);
+}
+.authority-alert:last-child { margin-bottom: 0; }
+.authority-alert-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.authority-alert-title { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+.authority-alert-meta { font-size: 0.86rem; color: var(--ink-soft); margin: 8px 0 12px; max-width: none; }
+.authority-alert-meta a { color: var(--leaf-dark); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.authority-alert-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.authority-alert-note {
+  font-size: 0.84rem;
+  background: #F8FAF6;
+  border-left: 3px solid var(--leaf);
+  padding: 8px 12px;
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
+  margin: 10px 0 0;
+  color: var(--ink);
+}
+
+/* Severity Risk Meter Bar */
+.severity-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 10px;
+}
+.severity-bar-bg {
+  flex: 1;
+  max-width: 220px;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.severity-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Status Badges */
+.alert-status {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+.status-notified { background: var(--clay-soft); color: var(--clay); }
+.status-acknowledged { background: #FBF3DE; color: var(--wheat); }
+.status-resolved { background: #E5EEDD; color: var(--leaf-dark); }
+.status-forwarded { background: #E5EEDD; color: var(--leaf-dark); }
+
+/* Forward Case: forwarded-case detail drawer */
+.authority-forward-detail {
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: #F8FAF6;
+  border: 1px solid var(--line);
+  font-size: 0.88rem;
+}
+.authority-forward-detail p { margin: 6px 0; color: var(--ink); }
+.authority-forward-detail strong { color: var(--leaf-dark); }
+.authority-forward-error { color: var(--clay); }
+
+/* Authority Header Account Pill */
+.authority-account { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
+.authority-account .auth-name {
+  font-weight: 700;
+  color: var(--leaf-dark);
+  background: #E5EEDD;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+}
+.authority-account .auth-logout {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.authority-account .auth-logout:hover {
+  border-color: var(--soil);
+  color: var(--ink);
+  background: #fff;
+}
+
+/* Authority Registration & Cards */
+.authority-reg-card { max-width: 600px; }
+.authority-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .authority-field-row { grid-template-columns: 1fr; gap: 0; } }
+
+.authority-key-box {
+  background: #FBF3DE;
+  border: 1px dashed var(--wheat);
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  font-family: monospace;
+  font-size: 0.95rem;
+  word-break: break-all;
+  margin: 10px 0 16px;
+  user-select: all;
+  color: #78350f;
+  font-weight: 600;
+}
+
+.authority-success-card {
+  background: #E5EEDD;
+  border: 1px solid var(--leaf);
+  border-radius: var(--radius-card);
+  padding: 22px;
+  margin-top: 20px;
+}
+.authority-success-card h3 { margin: 0 0 6px; color: var(--leaf-dark); }
+
+/* Farmers directory */
+.authority-farmers-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.authority-farmers-search {
+  flex: 1 1 240px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--ink);
+  transition: border-color 0.15s ease;
+}
+.authority-farmers-search:focus-visible {
+  outline: 2px solid var(--leaf-dark);
+  outline-offset: 1px;
+}
+.authority-farmers-filter {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  background: #fff;
+  color: var(--ink);
+}
+.authority-farmers-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.authority-farmer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+.authority-farmer-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.authority-farmer-card:hover {
+  border-color: var(--accent-soft);
+  box-shadow: 0 4px 12px rgba(31, 59, 42, 0.06);
+  transform: translateY(-2px);
+}
+.authority-farmer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.farmer-header-wrap { display: flex; align-items: center; gap: 10px; }
+.farmer-avatar-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #E5EEDD;
+  color: var(--leaf-dark);
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.authority-farmer-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 2px;
+  color: var(--ink);
+}
+.authority-farmer-id {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  font-family: monospace;
+}
+.authority-farmer-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+.badge-active { background: #E5EEDD; color: var(--leaf-dark); }
+.badge-monitored { background: #FBF3DE; color: var(--wheat); }
+.badge-alert { background: var(--clay-soft); color: var(--clay); }
+
+.authority-farmer-meta {
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.authority-farmer-meta strong {
+  color: var(--ink);
+}
+.authority-crop-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.authority-crop-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #E5EEDD;
+  color: var(--leaf-dark);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.authority-farmer-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.authority-farmer-actions .btn {
+  flex: 0 1 auto;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  min-height: 36px;
+}
+
+/* Danger action button (admin delete actions) */
+.btn-danger {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FCA5A5;
+}
+.btn-danger:hover:not(:disabled) {
+  background: #DC2626;
+  color: #ffffff;
+  border-color: #DC2626;
+}
+
+/* ==========================================================================
+   MOBILE ADAPTIVE UI ADAPTATIONS (Preserves 100% desktop fidelity)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .authority-page {
+    padding-top: 18px;
+    padding-bottom: 64px;
+  }
+  .authority-heading {
+    margin-bottom: 16px;
+  }
+  .authority-heading h1 {
+    font-size: 1.55rem;
+  }
+
+  /* Horizontal scrollable nav tabs on mobile phones */
+  #authorityNav {
+    display: flex !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    gap: 8px;
+    padding: 6px 2px 12px 2px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  #authorityNav::-webkit-scrollbar {
+    display: none;
+  }
+  #authorityNav a {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--card);
+    border: 1px solid var(--line);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--ink);
+    display: inline-block;
+  }
+  #authorityNav a.nav-active {
+    background: var(--leaf);
+    color: #ffffff;
+    border-color: var(--leaf);
+    box-shadow: 0 2px 6px rgba(31,59,42,0.2);
+  }
+
+  /* Metrics strip */
+  .authority-metrics-strip {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .authority-metric-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .metric-icon-wrap {
+    width: 38px;
+    height: 38px;
+    font-size: 1.05rem;
+  }
+  .metric-val {
+    font-size: 1.25rem;
+  }
+  .metric-label {
+    font-size: 0.72rem;
+  }
+
+  /* Command cards */
+  .authority-options {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .authority-option {
+    padding: 18px 16px;
+  }
+
+  /* Alerts list */
+  .authority-alert {
+    padding: 16px 14px;
+  }
+  .authority-alert-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .authority-alert-actions .btn {
+    width: 100%;
+    min-height: 42px;
+    font-size: 0.88rem;
+    justify-content: center;
+  }
+
+  /* Farmers filter bar */
+  .authority-farmers-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .authority-farmers-search {
+    width: 100%;
+    min-width: 0;
+  }
+  .authority-farmers-filter {
+    width: 100%;
+  }
+
+  /* Farmer cards */
+  .authority-farmer-card {
+    padding: 16px 14px;
+  }
+  .authority-farmer-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .authority-farmer-actions .btn {
+    min-height: 40px;
+    font-size: 0.82rem;
+    justify-content: center;
+    width: 100%;
+  }
+  .authority-farmer-actions .btn-danger {
+    grid-column: 1 / -1;
+  }
+
+  /* Broadcast form on mobile */
+  #authorityBroadcastFormCard {
+    padding: 16px 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .authority-metrics-strip {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .authority-metric-card {
+    padding: 10px 10px;
+    gap: 8px;
+  }
+  .metric-icon-wrap {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+  .metric-val {
+    font-size: 1.15rem;
+  }
+}
+

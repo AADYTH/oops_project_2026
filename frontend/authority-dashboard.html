@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOLIX — Authority Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<meta name="theme-color" content="#1F3B2A" />
+<style>
+  .dash-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 20px; }
+  .card label { display: block; font-size: 0.85rem; font-weight: 600; margin: 10px 0 4px; }
+  .card input { width: 100%; padding: 8px 10px; border-radius: var(--radius-card); border: 1px solid var(--line); font-family: var(--font-body); }
+  .alert-card { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .alert-card:last-child { border-bottom: none; }
+  .alert-status { font-weight: 700; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.04em; padding: 2px 8px; border-radius: var(--radius-pill); }
+  .status-notified { background: var(--clay-soft); color: var(--clay); }
+  .status-acknowledged { background: #FBF3DE; color: var(--wheat); }
+  .status-resolved { background: #E5EEDD; color: var(--leaf-dark); }
+  .status-forwarded { background: #E5EEDD; color: var(--leaf-dark); }
+  .apikey-box { background: #FBF3DE; border: 1px dashed var(--wheat); padding: 12px; border-radius: var(--radius-card); font-family: monospace; word-break: break-all; margin-top: 10px; }
+  .forward-detail { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 0.85rem; }
+  .forward-detail p { margin: 4px 0; }
+</style>
+</head>
+<body data-page="authority">
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <span class="brand" aria-label="FOLIX">
+      <img class="brand-logo" src="assets/folix-logo.png" alt="FOLIX" />
+    </span>
+    <nav class="header-nav" aria-label="Primary">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="how-it-works.html" data-nav="how">How it works</a>
+      <a href="scanner.html" data-nav="scanner">Scanner</a>
+      <a href="dashboard.html" data-nav="dashboard">Dashboard</a>
+      <a href="heatmap.html" data-nav="map">Disease Map</a>
+      <a href="farmer-alerts.html" data-nav="farmer-alerts">Nearby Alerts</a>
+    </nav>
+    <div class="header-tools">
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+<script src="protocol-check.js"></script>
+<script src="nav.js"></script>
+
+<main class="wrap" style="padding-top:32px;max-width:820px;">
+  <h1>Authority dashboard</h1>
+  <p>For agriculture extension offices and plant-protection authorities — separate from the farmer
+     <a href="dashboard.html">FOLIX Dashboard</a>. Log in with your office ID and API key to
+     see alerts sent to you, or register your office if you haven't received a key yet.</p>
+
+  <div class="dash-grid">
+
+    <div class="card" id="loginCard">
+      <h3>Log in</h3>
+      <label for="loginId">Authority ID</label>
+      <input id="loginId" type="number" placeholder="e.g. 42" />
+      <label for="loginKey">API key</label>
+      <input id="loginKey" type="text" placeholder="Paste the key you received at registration" />
+      <button class="btn btn-primary" id="loginBtn" style="margin-top:14px;">View my alerts</button>
+      <p id="loginError" style="color:var(--clay);display:none;margin-top:10px;"></p>
+    </div>
+
+    <div class="card" id="registerCard">
+      <h3>Register your office</h3>
+      <p style="font-size:0.85rem;">Don't have a login yet? Register once — you'll get an API key shown only at
+         that moment, so save it somewhere safe.</p>
+      <label for="regName">Office name</label>
+      <input id="regName" type="text" placeholder="e.g. Krishi Vigyan Kendra, Malappuram" />
+      <label for="regDistrict">District</label>
+      <input id="regDistrict" type="text" />
+      <label for="regState">State</label>
+      <input id="regState" type="text" />
+      <label for="regAddress">Address</label>
+      <input id="regAddress" type="text" />
+      <label for="regLat">Latitude (optional — we'll try to geocode the address if left blank)</label>
+      <input id="regLat" type="text" placeholder="e.g. 11.048" />
+      <label for="regLon">Longitude (optional)</label>
+      <input id="regLon" type="text" placeholder="e.g. 76.074" />
+      <label for="regPhone">Phone (for SMS alerts when no webhook is set)</label>
+      <input id="regPhone" type="text" placeholder="+91..." />
+      <label for="regEmail">Email</label>
+      <input id="regEmail" type="email" />
+      <label for="regWebhook">Webhook URL (optional, for automated alerts)</label>
+      <input id="regWebhook" type="text" placeholder="https://..." />
+      <button class="btn btn-secondary" id="registerBtn" style="margin-top:14px;">Register</button>
+      <div id="registerResult"></div>
+    </div>
+
+    <div class="card" id="alertsCard" hidden>
+      <h3>Your alerts</h3>
+      <p id="liveStatus" style="font-size:0.78rem;color:var(--ink-soft);margin:0 0 10px;"></p>
+      <div id="alertsList"></div>
+    </div>
+
+    <div class="card" id="forwardedCasesCard" hidden>
+      <h3>Forwarded cases</h3>
+      <p style="font-size:0.85rem;">Cases farmers have manually forwarded to an Agricultural Network support
+         contact. This list is read-only — nothing here forwards or notifies anyone.</p>
+      <div id="forwardedCasesList"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+"use strict";
+const API_BASE_URL = window.CROPGUARD_API_BASE_URL || "http://localhost:8080";
+let session = null; // { id, apiKey }
+
+// --- Live updates ------------------------------------------------------
+// This deployment has no WebSocket/SSE push channel, so "live" here means a reliable periodic
+// refresh (per the project brief: "implement a reliable periodic refresh and clearly communicate
+// its behavior"). We poll every POLL_INTERVAL_MS while the tab is visible and the officer is
+// logged in, pause while the tab is hidden (no point spending requests on a tab no one is
+// looking at), and refresh immediately when the tab becomes visible again. `refreshInFlight`
+// prevents two overlapping refreshes (e.g. a slow response overlapping the next tick) from firing
+// duplicate requests.
+// Overridable only for tests (defaults to the real 20s in production — see authority-dashboard
+// test suite, which sets window.__FOLIX_AUTHORITY_POLL_MS__ before the page's own script runs so
+// tests don't have to wait 20 real seconds per assertion).
+const POLL_INTERVAL_MS = window.__FOLIX_AUTHORITY_POLL_MS__ || 20000;
+let pollTimer = null;
+let refreshInFlight = false;
+let lastRefreshFailed = false;
+
+function setLiveStatus(text) {
+  const el = document.getElementById("liveStatus");
+  if (el) el.textContent = text;
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(() => { refreshAll(false); }, POLL_INTERVAL_MS);
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!session) return;
+  if (document.visibilityState === "visible") {
+    // Catch up immediately after being backgrounded, then resume the regular interval.
+    refreshAll(false);
+    startPolling();
+  } else {
+    stopPolling();
+  }
+});
+
+/**
+ * Reloads alerts + forwarded cases. `isInitialLoad` controls how failures are surfaced:
+ * the initial load (right after login) shows its own loading/error/empty states as before.
+ * A background poll never wipes an already-visible list on a transient error — a stale list the
+ * officer can still read is more useful than the page suddenly going blank every 20 seconds — but
+ * an actual 401 (bad/expired session) still stops polling and sends them back to the login form,
+ * since continuing to poll with a dead session would just be silent, repeated failure.
+ */
+async function refreshAll(isInitialLoad) {
+  if (refreshInFlight || !session) return;
+  refreshInFlight = true;
+  try {
+    const [alertsOutcome, casesOutcome] = await Promise.all([
+      loadAlerts(isInitialLoad),
+      loadForwardedCases(isInitialLoad),
+    ]);
+    lastRefreshFailed = alertsOutcome === "unauthenticated" || casesOutcome === "unauthenticated";
+    if (lastRefreshFailed) {
+      stopPolling();
+      session = null;
+      return;
+    }
+    lastRefreshFailed = (alertsOutcome === "error" || casesOutcome === "error");
+    setLiveStatus(lastRefreshFailed
+      ? "Auto-refreshing every 20s — the last refresh failed; still showing the most recent data."
+      : "Auto-refreshing every 20s — last updated " + new Date().toLocaleTimeString() + ".");
+  } finally {
+    refreshInFlight = false;
+  }
+}
+
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
+}
+
+document.getElementById("registerBtn").addEventListener("click", async () => {
+  const body = {
+    name: document.getElementById("regName").value.trim(),
+    district: document.getElementById("regDistrict").value.trim(),
+    state: document.getElementById("regState").value.trim(),
+    rawAddress: document.getElementById("regAddress").value.trim(),
+    latitude: document.getElementById("regLat").value ? parseFloat(document.getElementById("regLat").value) : null,
+    longitude: document.getElementById("regLon").value ? parseFloat(document.getElementById("regLon").value) : null,
+    phoneNumber: document.getElementById("regPhone").value.trim(),
+    email: document.getElementById("regEmail").value.trim(),
+    webhookUrl: document.getElementById("regWebhook").value.trim(),
+  };
+  const resultBox = document.getElementById("registerResult");
+  resultBox.innerHTML = "<p>Registering…</p>";
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/authorities/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    resultBox.innerHTML = `
+      <p style="margin-top:10px;">${escapeHtml(data.message)}</p>
+      <p style="font-size:0.85rem;font-weight:600;">Authority ID: ${data.authorityId}</p>
+      <div class="apikey-box">${escapeHtml(data.apiKey)}</div>
+    `;
+  } catch (err) {
+    resultBox.innerHTML = `<p style="color:var(--clay);">Registration failed: ${escapeHtml(err.message)}</p>`;
+  }
+});
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const id = document.getElementById("loginId").value.trim();
+  const key = document.getElementById("loginKey").value.trim();
+  const errorEl = document.getElementById("loginError");
+  errorEl.style.display = "none";
+
+  if (!id || !key) {
+    errorEl.textContent = "Enter both your authority ID and API key.";
+    errorEl.style.display = "block";
+    return;
+  }
+
+  session = { id, apiKey: key };
+  try {
+    localStorage.setItem("folix_authority_session", JSON.stringify({ role: "authority", id, apiKey: key }));
+  } catch (_) {}
+  await refreshAll(true);
+  startPolling();
+});
+
+async function loadAlerts(isInitialLoad) {
+  const alertsCard = document.getElementById("alertsCard");
+  const list = document.getElementById("alertsList");
+  const errorEl = document.getElementById("loginError");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/authorities/${session.id}/alerts`, {
+      headers: { "X-Authority-Api-Key": session.apiKey },
+    });
+    if (response.status === 401) throw new Error("Invalid authority ID or API key.");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const alerts = await response.json();
+
+    alertsCard.hidden = false;
+    if (alerts.length === 0) {
+      list.innerHTML = "<p>No alerts yet.</p>";
+      return "ok";
+    }
+
+    list.innerHTML = alerts.map((a) => `
+      <div class="alert-card" data-alert-id="${a.id}">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <strong>${escapeHtml(a.diseaseName)} — ${escapeHtml(a.cropName)}</strong>
+          <span class="alert-status status-${a.status.toLowerCase()}">${escapeHtml(a.status)}</span>
+        </div>
+        <p style="font-size:0.85rem;color:var(--ink-soft);margin:6px 0;">
+          Severity ${a.severityPercent}% ${a.epidemicRisk ? "· epidemic-risk pathogen" : ""} · via ${escapeHtml(a.channel)}
+          · reported ${new Date(a.createdAt).toLocaleString()}
+          ${a.latitude != null ? `· <a href="https://www.openstreetmap.org/?mlat=${a.latitude}&mlon=${a.longitude}#map=15/${a.latitude}/${a.longitude}" target="_blank" rel="noopener">view location</a>` : ""}
+        </p>
+        ${a.status !== "RESOLVED" ? `
+          <div style="display:flex;gap:8px;">
+            ${a.status === "NOTIFIED" ? `<button class="btn btn-secondary btn-small" data-action="ACKNOWLEDGED">Acknowledge</button>` : ""}
+            <button class="btn btn-primary btn-small" data-action="RESOLVED">Mark resolved</button>
+          </div>` : (a.resolutionNote ? `<p style="font-size:0.82rem;">Note: ${escapeHtml(a.resolutionNote)}</p>` : "")}
+      </div>
+    `).join("");
+
+    list.querySelectorAll("[data-action]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const card = btn.closest(".alert-card");
+        const alertId = card.dataset.alertId;
+        const status = btn.dataset.action;
+        let note = null;
+        if (status === "RESOLVED") {
+          note = prompt("Optional note about how this was resolved:") || null;
+        }
+        btn.disabled = true;
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/v1/authorities/${session.id}/alerts/${alertId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", "X-Authority-Api-Key": session.apiKey },
+            body: JSON.stringify({ status, note }),
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          await loadAlerts(false);
+        } catch (err) {
+          alert("Could not update alert: " + err.message);
+          btn.disabled = false;
+        }
+      });
+    });
+    return "ok";
+  } catch (err) {
+    const unauthenticated = err.message === "Invalid authority ID or API key.";
+    if (isInitialLoad || unauthenticated) {
+      errorEl.textContent = err.message;
+      errorEl.style.display = "block";
+      alertsCard.hidden = true;
+    }
+    // A background-poll failure that isn't a 401 intentionally leaves the last-good list showing
+    // (see refreshAll's doc comment) rather than hiding it here.
+    return unauthenticated ? "unauthenticated" : "error";
+  }
+}
+
+async function loadForwardedCases(isInitialLoad) {
+  const card = document.getElementById("forwardedCasesCard");
+  const list = document.getElementById("forwardedCasesList");
+
+  // Remember which "view details" panels are open so a background refresh doesn't silently
+  // collapse a case an officer is currently reading.
+  const openReportIds = new Set(
+    Array.from(list.querySelectorAll("[data-report-id]"))
+      .filter((el) => !el.querySelector("[data-detail]")?.hidden)
+      .map((el) => el.dataset.reportId)
+  );
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/authorities/${session.id}/forwarded-cases`, {
+      headers: { "X-Authority-Api-Key": session.apiKey },
+    });
+    if (response.status === 401) throw new Error("Invalid authority ID or API key.");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const cases = await response.json();
+
+    card.hidden = false;
+    if (cases.length === 0) {
+      list.innerHTML = "<p>No cases have been forwarded yet.</p>";
+      return "ok";
+    }
+
+    list.innerHTML = cases.map((c) => `
+      <div class="alert-card" data-report-id="${c.reportId}">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <strong>${escapeHtml(c.disease)} — ${escapeHtml(c.crop)}</strong>
+          <span class="alert-status status-${c.status.toLowerCase()}">${escapeHtml(c.status)}</span>
+        </div>
+        <p style="font-size:0.85rem;color:var(--ink-soft);margin:6px 0;">
+          Report ${escapeHtml(c.reportId)} · Severity ${escapeHtml(c.severity)}
+          · forwarded ${new Date(c.forwardedAt).toLocaleString()}
+          · to ${escapeHtml(c.supportContactName)}${c.supportContactOrganization ? " (" + escapeHtml(c.supportContactOrganization) + ")" : ""}
+        </p>
+        <button class="btn btn-secondary btn-small" data-action="view-details">View report details</button>
+        <div class="forward-detail" data-detail hidden></div>
+      </div>
+    `).join("");
+
+    list.querySelectorAll("[data-action='view-details']").forEach((btn) => {
+      btn.addEventListener("click", () => loadForwardDetail(btn));
+      const cardEl = btn.closest("[data-report-id]");
+      if (openReportIds.has(cardEl.dataset.reportId)) loadForwardDetail(btn);
+    });
+    return "ok";
+  } catch (err) {
+    const unauthenticated = err.message === "Invalid authority ID or API key.";
+    if (isInitialLoad || unauthenticated) {
+      card.hidden = true;
+    }
+    return unauthenticated ? "unauthenticated" : "error";
+  }
+}
+
+async function loadForwardDetail(btn) {
+  const cardEl = btn.closest(".alert-card");
+  const detailEl = cardEl.querySelector("[data-detail]");
+  if (!detailEl.hidden) { detailEl.hidden = true; return; }
+
+  const reportId = cardEl.dataset.reportId;
+  detailEl.hidden = false;
+  detailEl.innerHTML = "<p>Loading…</p>";
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/authorities/${session.id}/forwarded-cases/${reportId}`,
+      { headers: { "X-Authority-Api-Key": session.apiKey } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const d = await response.json();
+    detailEl.innerHTML = `
+      <p><strong>Plant part:</strong> ${escapeHtml(d.plantPart)}</p>
+      <p><strong>Confidence:</strong> ${escapeHtml(d.confidence)}</p>
+      ${d.symptoms && d.symptoms.length ? `<p><strong>Symptoms:</strong> ${d.symptoms.map(escapeHtml).join(", ")}</p>` : ""}
+      ${d.reasoning ? `<p><strong>Reasoning:</strong> ${escapeHtml(d.reasoning)}</p>` : ""}
+      ${d.recommendedActions && d.recommendedActions.length ? `<p><strong>Recommended actions:</strong> ${d.recommendedActions.map(escapeHtml).join(", ")}</p>` : ""}
+      <p><strong>Needs human review:</strong> ${d.needsHumanReview ? "Yes" : "No"}</p>
+    `;
+  } catch (err) {
+    detailEl.innerHTML = `<p style="color:var(--clay);">Could not load report details: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+  try {
+    const raw = localStorage.getItem("folix_authority_session");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.id && parsed.apiKey) {
+        session = { id: String(parsed.id), apiKey: parsed.apiKey };
+        const idInput = document.getElementById("loginId");
+        const keyInput = document.getElementById("loginKey");
+        if (idInput) idInput.value = parsed.id;
+        if (keyInput) keyInput.value = parsed.apiKey;
+        refreshAll(true);
+        startPolling();
+      }
+    }
+  } catch (_) {}
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOLIX — How it works</title>
+<meta name="description" content="From a crop image to actionable insight. How FOLIX uses AI vision to examine a crop photo, estimate severity and suggest the next step." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="workflow-video.css" />
+<link rel="stylesheet" href="how-it-works.css" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1F3B2A" />
+<script>document.documentElement.classList.add("js");</script>
+</head>
+<body data-page="how">
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="index.html" aria-label="FOLIX — Home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="22" height="22"><path d="M16 2C9 8 6 14 6 19a10 10 0 0 0 20 0c0-5-3-11-10-17Z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-name">FOLIX</span>
+    </a>
+    <nav class="header-nav" aria-label="Primary">
+      <a href="index.html" data-nav="home">Home</a>
+      <a href="how-it-works.html" data-nav="how">How it works</a>
+      <a href="scanner.html" data-nav="scanner">Scanner</a>
+      <a href="dashboard.html" data-nav="dashboard">Dashboard</a>
+      <a href="heatmap.html" data-nav="map">Disease Map</a>
+      <a href="farmer-alerts.html" data-nav="farmer-alerts">Nearby Alerts</a>
+    </nav>
+    <div class="header-tools">
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===================== 01 · INTRO ===================== -->
+  <section class="hiw-intro" aria-labelledby="hiw-title">
+    <div class="hiw-rings-layer" aria-hidden="true">
+    <svg class="hiw-rings" viewBox="0 0 800 800" focusable="false">
+      <g transform="rotate(-90 400 400)">
+        <circle class="ring ring-1" cx="400" cy="400" r="380" pathLength="1" style="--d:0.2s" />
+        <circle class="ring ring-2" cx="400" cy="400" r="300" pathLength="1" style="--d:0.5s" />
+        <circle class="ring ring-3" cx="400" cy="400" r="220" pathLength="1" style="--d:0.8s" />
+      </g>
+      <circle class="ring-node" cx="43" cy="270" r="4.5" />
+    </svg>
+    </div>
+
+    <div class="wrap hiw-intro-inner">
+      <p class="hero-eyebrow hiw-rise" style="--d:0.1s">How FOLIX works</p>
+      <h1 class="hiw-title hiw-rise" id="hiw-title" style="--d:0.25s">From a crop image to actionable insight.</h1>
+      <p class="hiw-lead hiw-rise" style="--d:0.45s">FOLIX uses AI vision to examine crop images, identify visible signs of disease, estimate severity, and guide the next step.</p>
+      <p class="hiw-note hiw-rise" style="--d:0.6s">The result is an AI-assisted assessment to support your decision. It is not a laboratory diagnosis.</p>
+    </div>
+  </section>
+
+  <!-- ===================== 02 · WORKFLOW VIDEO =====================
+    Reusable component: workflow-video.css / workflow-video.js.
+    To add the real film, follow assets/workflow/README.md, then set:
+      data-src="assets/workflow/workflow.mp4"
+      data-poster="assets/workflow/workflow-poster.jpg"
+    The film should walk through: 01 Capture, 02 AI Analysis, 03 Diagnosis,
+    04 Severity, 05 Recommended Action.
+    While data-src is empty the polished placeholder below is shown.
+  -->
+  <section class="hiw-video" id="workflow-video" aria-label="FOLIX workflow video">
+    <div class="wrap">
+      <figure class="wf-video" data-workflow-video data-src="assets/workflow/workflow.mp4" data-poster="assets/workflow/workflow-poster.jpg" data-state="placeholder" data-playing="false">
+        <div class="wf-stage">
+          <video class="wf-video-el" data-wf-video muted loop playsinline preload="none" aria-label="FOLIX workflow: from capturing a crop image to a recommended action" hidden></video>
+
+          <div class="wf-placeholder">
+            <span class="wf-ring wf-ring-1" aria-hidden="true"></span>
+            <span class="wf-ring wf-ring-2" aria-hidden="true"></span>
+            <span class="wf-ring wf-ring-3" aria-hidden="true"></span>
+            <span class="wf-cross wf-cross-h" aria-hidden="true"></span>
+            <span class="wf-cross wf-cross-v" aria-hidden="true"></span>
+            <p class="wf-ph-label">Workflow video</p>
+            <p class="wf-ph-note">Coming soon</p>
+          </div>
+
+          <span class="wf-corner tl" aria-hidden="true"></span>
+          <span class="wf-corner tr" aria-hidden="true"></span>
+          <span class="wf-corner bl" aria-hidden="true"></span>
+          <span class="wf-corner br" aria-hidden="true"></span>
+
+          <button class="wf-toggle" type="button" data-wf-toggle aria-label="Play workflow video" hidden>
+            <svg class="wf-icon-pause" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="3" y="2" width="3.2" height="12" rx="0.6" fill="currentColor"/><rect x="9.8" y="2" width="3.2" height="12" rx="0.6" fill="currentColor"/></svg>
+            <svg class="wf-icon-play" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.2v11.6L13.6 8 4 2.2Z" fill="currentColor"/></svg>
+          </button>
+        </div>
+        <figcaption class="wf-caption">From the first photo to a recommended action.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===================== 03 · THE PROCESS ===================== -->
+  <section class="hiw-section hiw-section-flush" id="process" aria-labelledby="process-title">
+    <div class="wrap">
+      <header class="hiw-head">
+        <h2 class="hiw-h2" id="process-title">Five steps, from image to action.</h2>
+      </header>
+
+      <ol class="hiw-steps" data-reveal>
+        <li class="hiw-step">
+          <div class="hiw-step-head"><span class="hiw-step-no">01</span><h3 class="hiw-step-name">Capture</h3></div>
+          <p>Take or upload an image of the crop.</p>
+        </li>
+        <li class="hiw-step">
+          <div class="hiw-step-head"><span class="hiw-step-no">02</span><h3 class="hiw-step-name">Analyze</h3></div>
+          <p>FOLIX examines the visible plant and symptoms using AI vision.</p>
+        </li>
+        <li class="hiw-step">
+          <div class="hiw-step-head"><span class="hiw-step-no">03</span><h3 class="hiw-step-name">Identify</h3></div>
+          <p>The AI provides the most likely disease or condition when the visual evidence supports an identification.</p>
+        </li>
+        <li class="hiw-step">
+          <div class="hiw-step-head"><span class="hiw-step-no">04</span><h3 class="hiw-step-name">Assess</h3></div>
+          <p>The system estimates severity and communicates uncertainty when the image does not provide enough evidence.</p>
+        </li>
+        <li class="hiw-step">
+          <div class="hiw-step-head"><span class="hiw-step-no">05</span><h3 class="hiw-step-name">Act</h3></div>
+          <p>You receive recommended next steps, and can save or forward the case when appropriate.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== 04 · WHAT FOLIX PROVIDES ===================== -->
+  <section class="hiw-section hiw-section-flush" id="features" aria-labelledby="features-title">
+    <div class="wrap hiw-provides">
+      <header class="hiw-head">
+        <h2 class="hiw-h2" id="features-title">What FOLIX provides.</h2>
+        <p>A scan is the starting point. These are the tools that help you use it.</p>
+      </header>
+
+      <ul class="hiw-features">
+        <li class="hiw-feature">
+          <h3>AI crop analysis</h3>
+          <p>Analyze crop images with AI vision.</p>
+        </li>
+        <li class="hiw-feature">
+          <h3>Severity monitoring</h3>
+          <p>Track the severity of detected crop problems over time.</p>
+        </li>
+        <li class="hiw-feature">
+          <h3>Scan history</h3>
+          <p>Keep previous assessments available for reference.</p>
+        </li>
+        <li class="hiw-feature">
+          <h3>Disease map</h3>
+          <p>View aggregated regional disease activity.</p>
+        </li>
+        <li class="hiw-feature">
+          <h3>Agricultural network</h3>
+          <p>Connect with relevant agricultural support.</p>
+        </li>
+        <li class="hiw-feature">
+          <h3>Case forwarding</h3>
+          <p>Forward serious cases to appropriate verified agricultural contacts when you choose to.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== 05 · AI WITH UNCERTAINTY ===================== -->
+  <section class="hiw-uncertain" aria-labelledby="uncertainty-title">
+    <div class="wrap hiw-uncertain-layout">
+      <div>
+        <h2 id="uncertainty-title">Not every image tells the whole story.</h2>
+        <p>If the visible evidence is unclear, FOLIX is designed to say so, instead of presenting an unsupported diagnosis as fact.</p>
+      </div>
+
+      <!-- Illustrative only: a line that runs from solid into dots. It encodes no data. -->
+      <svg class="hiw-gauge" viewBox="0 0 320 320" aria-hidden="true" focusable="false" data-reveal>
+        <circle class="g-base" cx="160" cy="160" r="140" />
+        <circle class="g-inner" cx="160" cy="160" r="96" />
+        <path class="g-solid" pathLength="1" d="M160 20 A140 140 0 1 1 116.74 293.15" />
+        <path class="g-dots" d="M116.74 293.15 A140 140 0 0 1 26.85 116.74" />
+        <circle class="g-node" cx="116.74" cy="293.15" r="3.6" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- ===================== 06 · CTA ===================== -->
+  <section class="hiw-cta" aria-labelledby="cta-title">
+    <div class="hiw-cta-layer" aria-hidden="true"><span class="hiw-cta-ring"></span></div>
+    <div class="wrap hiw-cta-inner">
+      <h2 id="cta-title">Ready to check your crop?</h2>
+      <div class="hiw-actions">
+        <a href="scanner.html" class="btn btn-primary">Scan your crop <span class="hiw-arrow" aria-hidden="true">→</span></a>
+        <a href="index.html" class="btn btn-ghost">Back to home</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer wrap">
+  <p>FOLIX is a diagnostic aid. For quarantine-notifiable diseases or large-scale outbreaks, always also contact your regional plant protection authority directly.</p>
+</footer>
+
+<script src="protocol-check.js"></script>
+<script src="nav.js"></script>
+<script src="auth.js"></script>
+<script src="workflow-video.js"></script>
+<script src="how-it-works.js"></script>
+</body>
+</html>

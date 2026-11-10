@@ -1,0 +1,169 @@
+spring:
+  application:
+    name: crop-scanner-backend
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/cropscanner}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+server:
+  port: 8080
+
+cropscanner:
+  inference-service:
+    base-url: http://localhost:8000
+    timeout-seconds: 120
+  escalation:
+    max-authority-radius-km: 75.0
+    notification-timeout-seconds: 15
+  cors:
+    allowed-origin: http://localhost:5173
+  security:
+    # OFF by default so the public farmer-facing client keeps working with no setup.
+    # Turn on once you have a client you control to embed a key into.
+    require-api-key: false
+    api-keys: ""
+    rate-limit-per-minute: 30
+  sms:
+    enabled: true
+    # "log" (default, no account needed) or "twilio" (needs TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER)
+    provider: log
+  outbreak:
+    grid-size-degrees: 0.05
+    min-scans-per-cell: 3
+  confidence:
+    high-threshold: 75.0
+    medium-threshold: 45.0
+  gemini:
+    # OFF by default (README "No paid fallback" / "Cost requirement": CropGuard must work with zero
+    # Gemini access). Set to true only once you've configured at least one free-tier key below —
+    # enabling this with zero keys configured just logs a warning and runs on the local model anyway,
+    # it will never silently create an account, a key, or switch to a paid model to compensate.
+    enabled: false
+    # Comma-separated free-tier keys for legitimate availability/failover (README "Gemini API key
+    # pool"). Prefer GEMINI_API_KEYS as one env var, OR set GEMINI_KEY_1 / GEMINI_KEY_2 / ... GEMINI_KEY_20
+    # individually — both are merged if both are present. NEVER put real keys directly in this file or
+    # commit them to git; this only reads from the environment.
+    api-keys: "${GEMINI_API_KEYS:}"
+    model: "${GEMINI_MODEL:gemini-3.1-flash-lite}"
+    cooldown-base-seconds: 30
+    cooldown-max-seconds: 900
+    timeout-seconds: 15
+
+# ---------------------------------------------------------------------------
+# FOLIX Scanner (Stage 4) — POST /api/scan/analyze, Gemini Vision as the ONLY diagnosis engine.
+# Independent of cropscanner.gemini.* above (that block belongs to the legacy CropGuard
+# second-opinion path and is left untouched). The Scanner needs no "enabled" switch: it is
+# available exactly when a Gemini key is present in the environment.
+#
+# API key: environment only — GEMINI_API_KEYS (comma-separated) or GEMINI_KEY_1..GEMINI_KEY_20.
+# The Scanner uses the FIRST key only and never rotates or fails over to another one, because Google
+# applies quotas per project (see FolixScannerConfig). NEVER put a key in this file or in git.
+# ---------------------------------------------------------------------------
+folix:
+  scanner:
+    # Server-side ceiling for the uploaded image (bytes). The browser downsizes photos before upload,
+    # so real uploads are typically a few hundred KB. Keep <= spring.servlet.multipart.max-file-size.
+    max-image-bytes: 10485760
+  gemini:
+    base-url: https://generativelanguage.googleapis.com/v1beta
+    # Verified current & GA in Google's release notes (Gemini 3.5 Flash-Lite, GA 2026-07-21).
+    # For higher visual accuracy on a paid project, try gemini-3.6-flash / gemini-3.8-flash.
+    model: "${FOLIX_GEMINI_MODEL:gemini-3.5-flash-lite}"
+    timeout-seconds: 45
+    connect-timeout-seconds: 10
+    # Thinking tokens count toward this cap; too small a value truncates the JSON answer.
+    max-output-tokens: 4096
+    # Optional: minimal | low | medium | high. Leave blank to use the model's default. NOTE: "minimal"
+    # is rejected by Gemini 3.7/3.8 Flash, which is why nothing is sent unless you set it.
+    thinking-level: "${FOLIX_GEMINI_THINKING_LEVEL:}"
+
+  # -------------------------------------------------------------------------
+  # Pl@ntNet — second-tier ONLINE fallback, tried only when Gemini itself fails (rate limit, invalid
+  # key, timeout, 5xx). See FolixScanService/PlantNetSpeciesClient. This has nothing to do with the
+  # frontend's separate offline/on-device path, which is untouched by this change.
+  #
+  # API key: environment only — PLANTNET_API_KEY. Free tier: 500 requests/day. If unset, the fallback
+  # bean is never created and a failed Gemini call surfaces exactly as it did before this fallback
+  # existed. NEVER put a key in this file or in git.
+  # -------------------------------------------------------------------------
+  plantnet:
+    base-url: https://my-api.plantnet.org
+    timeout-seconds: 20
+    connect-timeout-seconds: 10
+    organs: auto      # leaf | flower | fruit | bark | auto
+    lang: en
+
+  # -------------------------------------------------------------------------
+  # FOLIX farmer accounts (Stage 6A) — /api/auth/*, /api/farmer/*.
+  # Server-side sessions: the browser holds a random token in an HttpOnly cookie; the database holds only
+  # its SHA-256 hash. The allowed browser origin for state-changing calls (CSRF Origin check) is
+  # cropscanner.cors.allowed-origin, the same property CORS uses.
+  #  - local dev over http://localhost (frontend :5173, backend :8080 are same-site): defaults work.
+  #  - production over HTTPS: cookie-secure must be true (the prod profile does this). If the frontend and
+  #    API sit on DIFFERENT registrable domains, use cookie-same-site=None (requires cookie-secure=true).
+  # -------------------------------------------------------------------------
+  auth:
+    session-ttl-hours: 168          # absolute session lifetime (7 days; does not slide)
+    cookie-name: FOLIX_SESSION
+    cookie-secure: false            # true whenever served over HTTPS
+    cookie-same-site: Lax           # Lax | Strict | None
+    bcrypt-strength: 12
+
+  # -------------------------------------------------------------------------
+  # FOLIX Disease Map (Stage 6C) — GET /api/folix/disease-map and the optional farmer location choice
+  # (/api/farmer/location). The browser's coordinates are reduced to the CENTRE of a coarse grid cell and only
+  # that cell is stored. The values below are CLAMPED in code (FolixMapSettings) so configuration can never make
+  # the map precise or show a single farmer: cell size 50..1000, min-cases >= 2, min-farmers >= 2.
+  # -------------------------------------------------------------------------
+  map:
+    cell-size-millidegrees: "${FOLIX_MAP_CELL_SIZE_MILLIDEGREES:100}"   # 100 = 0.1 degree, about 11 km
+    min-cases: "${FOLIX_MAP_MIN_CASES:1}"            # reports update dynamically when scanned
+    min-farmers: "${FOLIX_MAP_MIN_FARMERS:1}"        # 1 report triggers the localized area
+    lookback-days: "${FOLIX_MAP_LOOKBACK_DAYS:30}"   # time basis: older reports drop off the map
+
+logging:
+  level:
+    com.cropscanner: INFO
+---
+# Production profile: run with `--spring.profiles.active=prod` and real env vars set.
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+cropscanner:
+  inference-service:
+    base-url: ${INFERENCE_SERVICE_URL}
+  cors:
+    allowed-origin: ${FRONTEND_ORIGIN}
+  security:
+    require-api-key: true
+    api-keys: ${API_KEYS:}
+    rate-limit-per-minute: ${RATE_LIMIT_PER_MINUTE:60}
+  sms:
+    provider: ${SMS_PROVIDER:log}
+
+folix:
+  auth:
+    # Production is served over HTTPS, so the session cookie must be Secure. For a local `docker compose up`
+    # over plain http, docker-compose.yml sets FOLIX_AUTH_COOKIE_SECURE=false.
+    cookie-secure: ${FOLIX_AUTH_COOKIE_SECURE:true}
+    cookie-same-site: ${FOLIX_AUTH_COOKIE_SAMESITE:Lax}

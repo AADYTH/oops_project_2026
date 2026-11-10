@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOLIX — See the crop. Understand the problem. Take action.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<link rel="preload" as="image" href="assets/hero/hero-poster.webp" type="image/webp" media="(min-width: 901px) and (min-aspect-ratio: 13/10)" />
+<link rel="preload" as="image" href="assets/hero/hero-mobile-poster.webp" type="image/webp" media="(max-width: 900px), (max-aspect-ratio: 13/10)" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#1F3B2A" />
+</head>
+<body data-page="home">
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="index.html" aria-label="FOLIX — Home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="22" height="22"><path d="M16 2C9 8 6 14 6 19a10 10 0 0 0 20 0c0-5-3-11-10-17Z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-name">FOLIX</span>
+    </a>
+    <nav class="header-nav" aria-label="Primary">
+      <a href="index.html" data-nav="home" data-i18n="nav.home">Home</a>
+      <a href="how-it-works.html" data-nav="how" data-i18n="nav.how">How it works</a>
+      <a href="scanner.html" data-nav="scanner" data-i18n="nav.scan">Scanner</a>
+      <a href="dashboard.html" data-nav="dashboard" data-i18n="nav.dashboard">Dashboard</a>
+      <a href="heatmap.html" data-nav="map" data-i18n="nav.heatmap">Disease Map</a>
+      <a href="farmer-alerts.html" data-nav="farmer-alerts">Nearby Alerts</a>
+
+    </nav>
+    <div class="header-tools">
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section id="top" class="hero-full">
+    <h1 class="visually-hidden">FOLIX</h1>
+
+    <!--
+      Hero media. The wordmark, ring and corner marks are part of the footage
+      itself, so nothing is layered on top of it. The footage sits on a
+      "stage" that always covers the hero; the buttons are positioned in the
+      stage's own coordinates (see .hero-actions), so they stay in the same
+      clear spot beside the figure at every screen size.
+
+      Two versions of the same footage ship, chosen at runtime by
+      hero-media.js / hero-media-mobile.js (never both loaded):
+
+        Desktop (pointer: fine, wider screens) - the 16:9 cut, played by the
+        cursor, not by time: it scrubs a pre-cut frame sequence
+        (assets/hero/hero-frames.*, built by tools/build_hero_frames.py).
+
+        Mobile (the @media breakpoint below) - a 9:16 cut of the same
+        footage (assets/hero/hero-mobile.mp4) so phones aren't pulling the
+        4+ MB desktop frame set. It idles as a looping video and a touch
+        drag scrubs it with the identical spring used on desktop, just
+        driving video.currentTime instead of a canvas frame index.
+
+      Each version's <img> is the instant first paint and the fallback
+      (reduced motion, missing browser feature, or the asset failing to
+      load).
+    -->
+    <div class="hero-media"
+         data-hero-media
+         data-hero-manifest="assets/hero/hero-frames.json"
+         data-hero-frames="assets/hero/hero-frames.bin">
+      <div class="hero-stage" data-hero-stage>
+        <img class="hero-stage-asset" data-hero-poster src="assets/hero/hero-poster.webp" alt="" />
+        <canvas class="hero-stage-asset" data-hero-canvas hidden
+                role="img"
+                aria-label="A dark bust overgrown with ivy. Its head turns to follow your cursor."></canvas>
+      </div>
+    </div>
+
+    <div class="hero-media hero-media-mobile"
+         data-hero-media-mobile
+         data-hero-video-src="assets/hero/hero-mobile.mp4">
+      <div class="hero-stage hero-stage-mobile" data-hero-stage-mobile>
+        <img class="hero-stage-asset" data-hero-poster-mobile src="assets/hero/hero-mobile-poster.webp" alt="" />
+        <video class="hero-stage-asset" data-hero-video hidden
+               muted playsinline webkit-playsinline preload="auto" loop
+               aria-label="A dark bust overgrown with ivy. Drag to turn its head."></video>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <a href="scanner.html" class="btn btn-primary">Scan your crop</a>
+      <a href="how-it-works.html" class="btn btn-ghost">How it works</a>
+    </div>
+  </section>
+
+</main>
+
+<script src="protocol-check.js"></script>
+<script src="i18n.js"></script>
+<script src="hero-media.js"></script>
+<script src="hero-media-mobile.js"></script>
+<script src="nav.js"></script>
+<script src="auth.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch((err) => console.warn("Service worker registration failed:", err));
+    });
+  }
+</script>
+</body>
+</html>

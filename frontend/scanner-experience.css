@@ -1,0 +1,1382 @@
+/* ==========================================================================
+   FOLIX — Scanner (Stage 3)
+
+   Loaded AFTER styles.css and uses only the existing Stage 1 design tokens
+   (--canvas, --card, --ink, --leaf, --line, --glow, --radius-*, --font-*).
+   Every class here is prefixed `scn-` so nothing collides with the shared
+   stylesheet or with the legacy CropGuard scanner rules (.scanner-panel,
+   .dropzone, .results-panel, ...), which are left untouched in styles.css.
+
+   States are toggled purely with the [hidden] attribute on `.scn-panel`
+   elements, driven by scanner-experience.js. No layout here assumes which
+   state is active — each panel is a self-contained, centered composition.
+   ========================================================================== */
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body[data-page="scanner"] main { overflow-x: hidden; }
+
+.scn {
+  position: relative;
+  padding: clamp(56px, 9vw, 96px) 0 clamp(80px, 10vw, 128px);
+}
+
+/* Faint concentric rings drifting behind the whole page, echoing the Home
+   and How-it-works pages. Purely decorative. */
+.scn-rings-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 12%, #000 88%, transparent 100%);
+}
+.scn-rings-layer svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(140vw, 1400px);
+  height: auto;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+}
+.scn-rings-layer circle { fill: none; stroke: var(--leaf); }
+.scn-rings-layer .r1 { stroke-opacity: 0.07; stroke-width: 1; }
+.scn-rings-layer .r2 { stroke-opacity: 0.05; stroke-width: 1; }
+.scn-rings-layer .r3 { stroke-opacity: 0.09; stroke-width: 1; }
+
+.scn-inner { position: relative; z-index: 1; }
+
+/* ---------- Intro ---------- */
+.scn-intro { max-width: 620px; margin: 0 auto clamp(40px, 6vw, 64px); text-align: center; }
+.scn-intro .hero-eyebrow { justify-content: center; }
+.scn-title {
+  font-size: clamp(2rem, 4.4vw, 3.1rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+.scn-lead { margin: 0 auto; font-size: 1.05rem; line-height: 1.6; }
+
+/* When viewing a full disease report, hide the intro hero and widen stage */
+.scn[data-state="result"] .scn-intro { display: none; }
+.scn[data-state="result"] { padding-top: clamp(24px, 3.5vw, 40px); }
+
+/* ---------- Stage: holds whichever panel is active ---------- */
+.scn-stage { max-width: 620px; margin: 0 auto; transition: max-width 0.2s ease; }
+.scn[data-state="result"] .scn-inner { max-width: 1360px; width: 100%; }
+.scn[data-state="result"] .scn-stage { max-width: 1360px; width: 100%; }
+.scn-panel[hidden] { display: none; }
+
+/* ---------- Shared framed-image chrome (empty / camera / preview / analyzing) ---------- */
+.scn-frame {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-width: 420px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scn-frame-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  transition: border-color 0.2s ease, box-shadow 0.3s ease;
+}
+.scn-frame-ring.outer { inset: -18px; opacity: 0.6; }
+.scn-corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: var(--leaf);
+  border-style: solid;
+  border-width: 0;
+  opacity: 0.55;
+}
+.scn-corner.tl { top: -6px; left: 26px; border-top-width: 1.5px; border-left-width: 1.5px; }
+.scn-corner.tr { top: -6px; right: 26px; border-top-width: 1.5px; border-right-width: 1.5px; }
+.scn-corner.bl { bottom: -6px; left: 26px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.scn-corner.br { bottom: -6px; right: 26px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+/* ---------- Empty state: circular upload dropzone ---------- */
+.scn-dropzone {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--line);
+  background: var(--card);
+  color: var(--ink-soft);
+  text-align: center;
+  cursor: pointer;
+  padding: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.3s ease, background 0.2s ease;
+}
+.scn-dropzone:hover,
+.scn-dropzone:focus-visible,
+.scn-dropzone.scn-dragover {
+  border-color: var(--leaf);
+  box-shadow: 0 0 0 8px var(--glow), 0 0 24px var(--glow);
+  background: var(--card);
+}
+.scn-dropzone:focus-visible { outline: none; }
+.scn-dz-icon { color: var(--leaf); display: inline-flex; margin-bottom: 2px; }
+.scn-dz-text { font-family: var(--font-display); font-weight: 600; font-size: 0.98rem; color: var(--ink); max-width: 20ch; }
+.scn-dz-hint { font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.75; }
+
+.scn-empty-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 30px;
+}
+.scn-or { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--soil); }
+
+/* ---------- Camera state ---------- */
+.scn-camera-frame video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #10140f;
+}
+.scn-camera-controls { display: flex; justify-content: center; gap: 12px; margin-top: 30px; }
+
+/* ---------- Preview / analyzing frame ---------- */
+.scn-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.scn-preview-actions,
+.scn-analyzing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+.scn-analyze-btn { min-width: 220px; }
+
+/* ---------- Analyzing animation ---------- */
+.scn-scan-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.scn-scan-sweep::before {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: 46%;
+  top: -50%;
+  background: linear-gradient(180deg, transparent 0%, var(--glow-strong) 48%, transparent 100%);
+  animation: scn-sweep 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes scn-sweep {
+  0%   { top: -50%; }
+  100% { top: 104%; }
+}
+.scn-frame.scn-is-analyzing .scn-frame-ring {
+  border-color: var(--leaf);
+  animation: scn-pulse 2.6s ease-in-out infinite;
+}
+@keyframes scn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--glow); }
+  50%      { box-shadow: 0 0 0 10px transparent; }
+}
+.scn-orbit {
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  border: 1px dashed rgba(31, 59, 42, 0.25);
+  animation: scn-spin 18s linear infinite;
+}
+@keyframes scn-spin { to { transform: rotate(360deg); } }
+
+.scn-analyzing-text { text-align: center; margin-top: 30px; }
+.scn-analyzing-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.scn-analyzing-note { margin: 0 auto; max-width: 40ch; font-size: 0.92rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scn-scan-sweep::before,
+  .scn-frame.scn-is-analyzing .scn-frame-ring,
+  .scn-orbit { animation: none; }
+}
+
+/* ---------- Result & Uncertain panels ---------- */
+.scn-uncertain-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: clamp(24px, 4vw, 40px);
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.scn-result-panel {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.scn-result-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.scn-result-crop { margin: 0; font-size: 0.95rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.scn-result-condition { margin: 4px 0 0; font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: var(--ink); }
+
+.scn-pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.scn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: var(--radius-pill);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: var(--canvas);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+.scn-pill-label { opacity: 0.7; font-weight: 600; }
+.scn-pill.sev-mild { background: #E4EBDC; color: var(--leaf-dark); border-color: transparent; }
+.scn-pill.sev-moderate { background: #FBF3DE; color: var(--wheat); border-color: transparent; }
+.scn-pill.sev-severe { background: var(--clay-soft); color: var(--clay); border-color: transparent; }
+.scn-pill.sev-unknown { background: var(--line); color: var(--ink-soft); border-color: transparent; }
+.scn-pill.conf-high { background: #E4EBDC; color: var(--leaf-dark); border-color: transparent; }
+.scn-pill.conf-moderate { background: #FBF3DE; color: var(--wheat); border-color: transparent; }
+.scn-pill.conf-low { background: var(--line); color: var(--ink-soft); border-color: transparent; }
+.scn-pill.conf-unspecified { background: var(--canvas); color: var(--ink-soft); border-color: var(--line); }
+
+.scn-section { border-top: 1px solid var(--line); padding: 18px 0; }
+.scn-section:first-of-type { margin-top: 22px; }
+.scn-section-label {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--soil);
+}
+.scn-section p { margin: 0; font-size: 0.95rem; color: var(--ink); max-width: none; }
+
+.scn-tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.scn-tag-list li {
+  font-size: 0.85rem;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+/* Remedy cards: like .scn-tag-list but each item holds several lines (name, instructions, dosage, etc.)
+   rather than a single short tag, so they stack full-width instead of wrapping as inline pills. */
+.scn-remedy-list { flex-direction: column; gap: 10px; }
+.scn-remedy-list .scn-remedy-card {
+  width: 100%;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.scn-remedy-name { font-weight: 700; margin: 0 0 4px; }
+.scn-remedy-card p { margin: 4px 0 0; }
+.scn-remedy-card p:first-child { margin-top: 0; }
+.scn-remedy-meta { font-size: 0.85rem; color: var(--ink-soft); }
+
+.scn-review-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: var(--canvas);
+  font-size: 0.9rem;
+}
+.scn-review-banner.needs-review { border-color: var(--wheat); background: #FBF3DE; }
+.scn-review-banner.needs-review strong { color: #8a6a1f; }
+.scn-review-banner p { margin: 0; }
+
+/* Epidemic-risk / spread-danger banner — deliberately distinct from .scn-review-banner.needs-review
+   (amber, review-status) and from the severity pill (per-plant condition): solid clay/red so a
+   spread-risk warning is never mistaken for either. */
+.scn-danger-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--clay);
+  background: var(--clay);
+  color: #fff;
+  font-size: 0.9rem;
+}
+.scn-danger-banner p { margin: 0; }
+.scn-danger-banner strong { color: #fff; }
+
+.scn-disclaimer {
+  max-width: 640px;
+  margin: 22px auto 0;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  opacity: 0.85;
+  text-align: center;
+}
+
+/* ---------- Uncertain panel ---------- */
+.scn-uncertain-panel { text-align: left; }
+.scn-uncertain-icon { color: var(--soil); margin-bottom: 14px; display: inline-flex; }
+.scn-uncertain-title { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; margin: 0 0 10px; color: var(--ink); }
+.scn-uncertain-lead { margin: 0 0 4px; font-size: 0.98rem; }
+
+/* ---------- Result / uncertain action row ---------- */
+.scn-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.scn-action-btn { position: relative; }
+.scn-action-placeholder-note {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--soil);
+  margin-top: 4px;
+}
+.scn-inline-note {
+  width: 100%;
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.scn-inline-note.scn-note-error { color: var(--wheat); }
+.scn-inline-note.scn-note-success { color: var(--leaf-dark); }
+.scn-action-btn.scn-action-saved { background: var(--leaf); color: #fff; border-color: var(--leaf); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 560px) {
+  .scn-frame { max-width: 300px; }
+  .scn-corner { display: none; }
+  .scn-result-panel, .scn-uncertain-panel { padding: 22px; }
+  .scn-actions-row { flex-direction: column; align-items: stretch; }
+  .scn-actions-row .btn { width: 100%; }
+}
+
+/* ---- Severity % / spread-chance % meters (shown for any named disease, whatever the confidence) ---- */
+.scn-meters { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 18px; }
+@media (min-width: 640px) { .scn-meters { grid-template-columns: 1fr 1fr; } }
+.scn-meter {
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 12px 14px;
+}
+.scn-meter-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.scn-meter-label { font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); }
+.scn-meter-value { font-family: var(--font-display, inherit); font-size: 1.35rem; font-weight: 800; }
+.scn-meter-na .scn-meter-value { font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
+.scn-meter-track { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; margin-top: 8px; }
+.scn-meter-fill { display: block; height: 100%; border-radius: 999px; }
+.scn-meter-low .scn-meter-fill { background: var(--leaf-dark); }
+.scn-meter-mid .scn-meter-fill { background: var(--wheat); }
+.scn-meter-high .scn-meter-fill { background: var(--clay); }
+.scn-meter-low .scn-meter-value { color: var(--leaf-dark); }
+.scn-meter-mid .scn-meter-value { color: #8a6a1f; }
+.scn-meter-high .scn-meter-value { color: var(--clay); }
+.scn-meter-hint { margin: 8px 0 0; font-size: 0.76rem; color: var(--ink-soft); }
+.scn-lowconf-banner { margin-bottom: 14px; }
+
+/* ---- Forward Case picker ---- */
+.scn-forward-picker {
+  flex-basis: 100%;
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 12px 14px;
+}
+.scn-forward-label { font-size: 0.85rem; font-weight: 600; }
+.scn-forward-select {
+  width: 100%; padding: 8px 10px;
+  border: 1px solid var(--line); border-radius: var(--radius-card);
+  font-family: var(--font-body); background: #fff;
+}
+.scn-forward-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ---- Alert Authority button + hint ---- */
+.btn-warning {
+  background: #b5891e;
+  color: #fff;
+  border: 1.5px solid #a07816;
+  font-weight: 600;
+}
+.btn-warning:hover:not(:disabled) { background: #9c7228; }
+.btn-warning:disabled { opacity: 0.55; cursor: not-allowed; }
+.scn-alert-authority-btn { white-space: nowrap; }
+
+.scn-authority-hint {
+  background: linear-gradient(135deg, #fff8e7 0%, #fff3d0 100%);
+  border: 1px solid #e8d5a0;
+  border-left: 4px solid #b5891e;
+  border-radius: var(--radius-card);
+  padding: 12px 16px;
+  margin-top: 18px;
+  font-size: 0.88rem;
+  color: #5a4710;
+  line-height: 1.5;
+}
+.scn-authority-hint p { margin: 0; }
+.scn-authority-hint strong { color: #6b5212; }
+
+/* ==========================================================================
+   FOLIX — Post-Scan Disease Report Redesign
+   Matching reference screenshot media_1790787657854.png
+   ========================================================================== */
+
+/* ---------- Report Header ---------- */
+.scn-report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 22px;
+  position: relative;
+  gap: 20px;
+}
+.scn-report-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scn-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #4A5B50;
+  text-decoration: none;
+  margin-bottom: 6px;
+  transition: color 0.15s ease, transform 0.15s ease;
+  width: fit-content;
+}
+.scn-back-link:hover {
+  color: #1A3D2A;
+  transform: translateX(-2px);
+}
+.scn-report-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scn-report-leaf-icon {
+  color: #2D6A4F;
+  display: inline-flex;
+  align-items: center;
+}
+.scn-report-title {
+  font-family: var(--font-display, inherit);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #1A2E22;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.scn-report-subtitle {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #5F6F65;
+  line-height: 1.4;
+}
+
+.scn-report-header-right {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-top: 10px;
+}
+.scn-report-header-leaves {
+  position: absolute;
+  right: -25px;
+  top: -24px;
+  width: 170px;
+  height: 100px;
+  pointer-events: none;
+  opacity: 0.65;
+  z-index: 0;
+}
+.scn-header-badges {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.scn-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid #DCE4D8;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #2D3E33;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+.scn-header-badge svg {
+  color: #3B6B50;
+  flex-shrink: 0;
+}
+
+/* ---------- 2-Column Report Grid ---------- */
+.scn-report-grid {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+@media (max-width: 960px) {
+  .scn-report-grid {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+}
+
+/* ---------- Common Card Styles ---------- */
+.scn-card {
+  background: #FFFFFF;
+  border: 1px solid #E6ECE1;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.scn-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.scn-card-icon {
+  color: #2D6A4F;
+  flex-shrink: 0;
+}
+.scn-card-title {
+  font-family: var(--font-display, inherit);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1A2E22;
+  margin: 0;
+}
+
+/* ---------- Left Column: Photo & Quick Summary ---------- */
+.scn-report-col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+.scn-photo-card {
+  overflow: hidden;
+  padding: 0;
+  flex-shrink: 0;
+}
+.scn-crop-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 15px;
+}
+.scn-view-original-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  background: rgba(22, 38, 28, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.22);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.scn-view-original-btn:hover {
+  background: rgba(22, 38, 28, 0.95);
+  transform: translateY(-1px);
+}
+
+.scn-summary-card {
+  padding: 20px 22px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.scn-sparkle-icon {
+  color: #2D6A4F;
+  font-size: 1rem;
+}
+.scn-summary-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+  gap: 14px;
+}
+.scn-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.scn-summary-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.scn-summary-icon.icon-sage { background: #EAF2E8; color: #2D6A4F; }
+.scn-summary-icon.icon-neutral { background: #EDF2ED; color: #44564B; }
+.scn-summary-icon.icon-sev-severe { background: #FDECEB; color: #C24136; }
+.scn-summary-icon.icon-sev-moderate { background: #FBF3DE; color: #B88E28; }
+.scn-summary-icon.icon-sev-mild { background: #EAF2E8; color: #2D6A4F; }
+.scn-summary-icon.icon-sev-unknown { background: #EEF2EC; color: #6E7C73; }
+.scn-summary-icon.icon-conf-high { background: #EAF2E8; color: #2D6A4F; }
+.scn-summary-icon.icon-conf-moderate { background: #FBF3DE; color: #B88E28; }
+.scn-summary-icon.icon-conf-low { background: #EEF2EC; color: #6E7C73; }
+.scn-summary-icon.icon-conf-unknown { background: #EEF2EC; color: #6E7C73; }
+
+.scn-summary-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.scn-summary-value {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #1A2E22;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scn-summary-label {
+  font-size: 0.72rem;
+  color: #728277;
+  font-weight: 500;
+}
+.scn-qs-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: fit-content;
+}
+.scn-qs-badge.sev-severe { background: #FDECEB; color: #C24136; }
+.scn-qs-badge.sev-moderate { background: #FBF3DE; color: #8A6A1F; }
+.scn-qs-badge.sev-mild { background: #EAF2E8; color: #2D6A4F; }
+.scn-qs-badge.sev-unknown { background: #EEF2EC; color: #6E7C73; }
+.scn-qs-badge.conf-high { background: #EAF2E8; color: #2D6A4F; }
+.scn-qs-badge.conf-moderate { background: #FBF3DE; color: #8A6A1F; }
+.scn-qs-badge.conf-low { background: #EEF2EC; color: #6E7C73; }
+
+/* ---------- Right Column ---------- */
+.scn-report-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 1. Overview Card */
+/* 1. Overview Card */
+.scn-overview-card {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+@media (max-width: 1080px) {
+  .scn-overview-card {
+    flex-wrap: wrap;
+  }
+}
+.scn-overview-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scn-crop-pill {
+  display: inline-block;
+  background: #EAF2E8;
+  color: #3B5A45;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 6px;
+  width: fit-content;
+}
+.scn-disease-title {
+  font-family: var(--font-display, inherit);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #1A2E22;
+  margin: 3px 0 8px;
+  line-height: 1.2;
+}
+.scn-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.scn-badges-row .scn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.scn-badges-row .scn-pill.sev-severe { background: #FDF0ED; color: #C24136; border: 1px solid #F5C6CB; }
+.scn-badges-row .scn-pill.sev-moderate { background: #FBF3DE; color: #8A6A1F; border: 1px solid #EEDEA8; }
+.scn-badges-row .scn-pill.sev-mild { background: #EDF5E8; color: #2D6A4F; border: 1px solid #CDE2CC; }
+.scn-badges-row .scn-pill.sev-unknown { background: #EEF2EC; color: #6E7C73; border: 1px solid #DEE5DC; }
+.scn-badges-row .scn-pill.conf-high { background: #EDF5E8; color: #2D6A4F; border: 1px solid #CDE2CC; }
+.scn-badges-row .scn-pill.conf-moderate { background: #FBF3DE; color: #8A6A1F; border: 1px solid #EEDEA8; }
+.scn-badges-row .scn-pill.conf-low { background: #EEF2EC; color: #6E7C73; border: 1px solid #DEE5DC; }
+
+.scn-overview-gauges {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .scn-overview-gauges {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+.scn-gauge-card {
+  background: #FAFCF9;
+  border: 1px solid #E6ECE1;
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 210px;
+  flex: 1;
+}
+.scn-gauge-circle {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scn-gauge-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.scn-gauge-bg {
+  fill: none;
+  stroke: #E6EDE3;
+  stroke-width: 3.5;
+}
+.scn-gauge-bar {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 3.5;
+  transition: stroke-dashoffset 0.6s ease;
+}
+.scn-gauge-bar.tone-high { stroke: #C24136; }
+.scn-gauge-bar.tone-mid { stroke: #B88E28; }
+.scn-gauge-bar.tone-low { stroke: #2D6A4F; }
+.scn-gauge-val {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display, inherit);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1A2E22;
+}
+.scn-gauge-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.scn-gauge-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1A2E22;
+  white-space: nowrap;
+}
+.scn-gauge-track {
+  height: 4px;
+  border-radius: 999px;
+  background: #E6EDE3;
+  overflow: hidden;
+  margin: 3px 0 2px;
+  width: 100%;
+  min-width: 80px;
+}
+.scn-gauge-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+.scn-gauge-fill.tone-high { background: #C24136; }
+.scn-gauge-fill.tone-mid { background: #B88E28; }
+.scn-gauge-fill.tone-low { background: #2D6A4F; }
+.scn-gauge-desc {
+  font-size: 0.68rem;
+  color: #6E7C73;
+  line-height: 1.35;
+  margin: 0;
+  max-width: 155px;
+}
+.scn-gauge-na-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #738278;
+}
+.scn-gauge-na-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #738278;
+}
+
+/* 2. Row 2: Symptoms & Reasoning */
+.scn-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+}
+@media (max-width: 840px) {
+  .scn-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+.scn-symptoms-card,
+.scn-reasoning-card {
+  padding: 18px 20px;
+}
+.scn-chips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.scn-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #F4F7F2;
+  border: 1px solid #E1E8DC;
+  border-radius: 20px;
+  padding: 6px 13px;
+  font-size: 0.78rem;
+  color: #2C3E33;
+  line-height: 1.3;
+}
+.scn-chip svg {
+  color: #2D6A4F;
+  flex-shrink: 0;
+}
+.scn-reasoning-text {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: #4A5850;
+  margin: 0;
+}
+
+/* 3. Row 3: Recommended Action */
+.scn-actions-card {
+  padding: 18px 20px;
+}
+.scn-check-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2D6A4F;
+  color: #FFFFFF;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.scn-action-items-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+@media (max-width: 1040px) {
+  .scn-action-items-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .scn-action-items-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.scn-action-card {
+  background: #F9FAF7;
+  border: 1px solid #E6ECE1;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.scn-action-icon-wrap {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #EDF2ED;
+  color: #2D6A4F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.scn-action-icon-wrap svg {
+  width: 14px;
+  height: 14px;
+}
+.scn-action-text {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #3A4A40;
+  margin: 0;
+}
+
+/* 4. Row 4: 3 Columns (Organic, Chemical, Review Status) */
+.scn-grid-3col {
+  display: grid;
+  grid-template-columns: 1.15fr 1.35fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+@media (max-width: 1060px) {
+  .scn-grid-3col {
+    grid-template-columns: 1fr;
+  }
+}
+.scn-remedies-col,
+.scn-review-col {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Organic remedies */
+.scn-remedy-card {
+  background: #F9FAF7;
+  border: 1px solid #E6ECE1;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.scn-remedy-card:last-child {
+  margin-bottom: 0;
+}
+.scn-remedy-top {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.scn-remedy-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #EDF2ED;
+  color: #2D6A4F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.scn-remedy-icon.icon-chemical {
+  color: #2D6A4F;
+}
+.scn-remedy-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.scn-remedy-name {
+  font-family: var(--font-display, inherit);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1A2E22;
+  margin: 0;
+}
+.scn-remedy-desc {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: #58685E;
+  margin: 0;
+}
+.scn-remedy-freq {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.scn-freq-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8A968E;
+  font-weight: 600;
+}
+.scn-freq-val {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #1A2E22;
+  background: #FFFFFF;
+  border: 1px solid #E1E8DC;
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Chemical remedies */
+.scn-chemical-card {
+  gap: 10px;
+}
+.scn-chem-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #E6ECE1;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.7rem;
+  background: #FAFCF9;
+}
+.scn-chem-table tr {
+  border-bottom: 1px solid #E6ECE1;
+}
+.scn-chem-table tr:last-child {
+  border-bottom: none;
+}
+.scn-chem-table th {
+  font-weight: 600;
+  color: #6E7C73;
+  padding: 6px 10px;
+  text-align: left;
+  width: 36%;
+  background: #F4F7F2;
+  vertical-align: top;
+  border-right: 1px solid #E6ECE1;
+}
+.scn-chem-table td {
+  color: #2D3E33;
+  padding: 6px 10px;
+  vertical-align: top;
+}
+
+/* Review status & Actions */
+.scn-review-box {
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.scn-review-box.needs-review {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+}
+.scn-review-box.review-ok {
+  background: #F4F8F3;
+  border: 1px solid #D2E4D0;
+}
+.scn-review-icon-badge {
+  font-size: 0.85rem;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+.scn-review-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.scn-review-box.needs-review strong {
+  color: #92400E;
+  font-size: 0.75rem;
+}
+.scn-review-box.needs-review p {
+  color: #78350F;
+  margin: 0;
+}
+.scn-review-box.review-ok strong {
+  color: #23553E;
+  font-size: 0.75rem;
+}
+.scn-review-box.review-ok p {
+  color: #386A51;
+  margin: 0;
+}
+
+.scn-review-actions-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+.scn-review-actions-wrap .scn-actions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.scn-review-actions-wrap .scn-actions-row [data-scn-action="save"] {
+  width: 100%;
+  background: #2D5A43;
+  color: #FFFFFF;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 2px 4px rgba(45,90,67,0.18);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.scn-review-actions-wrap .scn-actions-row [data-scn-action="save"]:hover:not(:disabled) {
+  background: #234835;
+  transform: translateY(-1px);
+}
+.scn-review-actions-wrap .scn-secondary-actions-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.scn-review-actions-wrap .scn-secondary-actions-row [data-scn-action="forward"],
+.scn-review-actions-wrap .scn-secondary-actions-row [data-scn-action="again"],
+.scn-review-actions-wrap .scn-secondary-actions-row [data-scn-action="reset"] {
+  flex: 1;
+  background: #FFFFFF;
+  border: 1px solid #D0D8CA;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #2D5A43;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.scn-review-actions-wrap .scn-secondary-actions-row [data-scn-action="forward"]:hover:not(:disabled),
+.scn-review-actions-wrap .scn-secondary-actions-row [data-scn-action="again"]:hover:not(:disabled),
+.scn-review-actions-wrap .scn-secondary-actions-row [data-scn-action="reset"]:hover:not(:disabled) {
+  background: #F4F7F2;
+  border-color: #B5C4AD;
+}
+
+/* Lightbox Modal */
+#scnImageModal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 24, 18, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 24px;
+}
+#scnImageModal[hidden] {
+  display: none !important;
+}
+.scn-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+.scn-modal-container,
+.scn-image-modal-dialog {
+  position: relative;
+  z-index: 1;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: #18281E;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+}
+#scnModalImg,
+.scn-image-modal-img {
+  max-width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  display: block;
+}
+.scn-modal-close,
+.scn-image-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.6);
+  color: #FFFFFF;
+  border: 1px solid rgba(255,255,255,0.3);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  z-index: 2;
+}
+.scn-modal-close:hover,
+.scn-image-modal-close:hover {
+  background: rgba(0,0,0,0.85);
+}
+
+/* ==========================================================================
+   MOBILE ADAPTIVE UI ADAPTATIONS (Preserves 100% desktop fidelity)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .scn {
+    padding: 32px 0 64px;
+  }
+  .scn-intro {
+    margin-bottom: 28px;
+    padding: 0 16px;
+  }
+  .scn-circle-frame {
+    max-width: min(84vw, 340px);
+    max-height: min(84vw, 340px);
+  }
+  .scn-review-actions-wrap {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 12px;
+  }
+  .scn-review-actions-wrap [data-scn-action="save"] {
+    min-height: 48px;
+    font-size: 0.95rem;
+  }
+  .scn-review-actions-wrap .scn-secondary-actions-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .scn-review-actions-wrap .scn-secondary-actions-row button {
+    min-height: 42px;
+    font-size: 0.82rem;
+  }
+  .scn-remedy-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .scn-remedy-nav::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FOLIX — Log in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="auth.css" />
+<meta name="theme-color" content="#1F3B2A" />
+</head>
+<body data-page="login">
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="index.html" aria-label="FOLIX — Home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="22" height="22"><path d="M16 2C9 8 6 14 6 19a10 10 0 0 0 20 0c0-5-3-11-10-17Z" fill="currentColor"/></svg>
+      </span>
+      <span class="brand-name">FOLIX</span>
+    </a>
+  </div>
+</header>
+<script src="protocol-check.js"></script>
+<script src="nav.js"></script>
+<script src="auth.js"></script>
+
+<main class="wrap auth-page">
+  <div class="auth-card" id="roleChoice">
+    <h1>Log in to FOLIX</h1>
+    <p class="auth-lede">How are you signing in?</p>
+    <div class="role-choice-options">
+      <button type="button" class="btn btn-primary btn-large" id="chooseUserBtn">I'm a Farmer / User</button>
+      <button type="button" class="btn btn-secondary btn-large" id="chooseAuthorityBtn">I'm an Authority</button>
+    </div>
+    <p class="auth-alt" style="margin-top: 24px;">Need to register? <a href="register.html">Farmer registration</a> &middot; <a href="authority.html#register" id="authorityRegisterLink">Authority registration</a></p>
+  </div>
+
+  <div class="auth-card" id="loginCard" hidden>
+    <h1>Log in</h1>
+    <p class="auth-lede">Log in to save scan reports and see your Dashboard.</p>
+
+    <form id="loginForm" novalidate>
+      <div class="auth-field">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" name="email" type="email" autocomplete="email" inputmode="email" required />
+        <p class="auth-field-error" id="loginEmailError" hidden></p>
+      </div>
+      <div class="auth-field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" name="password" type="password" autocomplete="current-password" required />
+        <p class="auth-field-error" id="loginPasswordError" hidden></p>
+      </div>
+      <p class="auth-error" id="loginError" role="alert" hidden></p>
+      <button class="btn btn-primary btn-large" id="loginSubmit" type="submit">Log in</button>
+    </form>
+
+    <p class="auth-alt"><a href="#" id="backToRoleChoice">‹ Choose a different account type</a></p>
+    <p class="auth-alt">New to FOLIX? <a id="registerLink" href="register.html">Create an account</a></p>
+    <p class="auth-alt">Are you an authority? <a href="authority.html">Authority sign-in</a> &middot; <a href="authority.html#register">Register office</a></p>
+  </div>
+
+  <div class="auth-card" id="loginDone" hidden>
+    <h1 id="loginDoneTitle">You're logged in</h1>
+    <p class="auth-lede" id="loginDoneText"></p>
+    <a class="btn btn-primary" id="loginDoneLink" href="dashboard.html">Go to Dashboard</a>
+  </div>
+</main>
+
+<script src="auth-pages.js"></script>
+<script>
+"use strict";
+(function () {
+  var roleChoice = document.getElementById("roleChoice");
+  var loginCard = document.getElementById("loginCard");
+  var chooseUserBtn = document.getElementById("chooseUserBtn");
+  var chooseAuthorityBtn = document.getElementById("chooseAuthorityBtn");
+  var backLink = document.getElementById("backToRoleChoice");
+
+  function showLoginForm() {
+    roleChoice.hidden = true;
+    loginCard.hidden = false;
+    var email = document.getElementById("loginEmail");
+    if (email) email.focus();
+  }
+
+  chooseUserBtn.addEventListener("click", showLoginForm);
+
+  // Role routing: Authority goes to its own area (authority.html), which has no farmer features.
+  chooseAuthorityBtn.addEventListener("click", function () {
+    window.location.href = "authority.html";
+  });
+
+  backLink.addEventListener("click", function (e) {
+    e.preventDefault();
+    loginCard.hidden = true;
+    roleChoice.hidden = false;
+  });
+
+  // Already signed in as a farmer? Skip straight past the chooser to the "you're logged in" card
+  // that auth-pages.js shows.
+  if (window.FolixAuth) {
+    window.FolixAuth.getSession().then(function (s) {
+      if (s.authenticated) roleChoice.hidden = true;
+    });
+  }
+
+  // Automatic location fetch on farmer login
+  var loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", function () {
+      if (typeof navigator !== "undefined" && navigator.geolocation && typeof navigator.geolocation.getCurrentPosition === "function") {
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          try {
+            var lat = pos.coords.latitude;
+            var lon = pos.coords.longitude;
+            try {
+              localStorage.setItem("folix_latitude", String(lat));
+              localStorage.setItem("folix_longitude", String(lon));
+            } catch (_) {}
+            var url = (window.CROPGUARD_API_BASE_URL || "http://localhost:8080") + "/api/farmer/location";
+            fetch(url, {
+              method: "PUT",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                consent: true,
+                latitude: Math.round(lat * 100) / 100,
+                longitude: Math.round(lon * 100) / 100
+              })
+            }).catch(function () {});
+          } catch (_) {}
+        }, function () {}, { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 });
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

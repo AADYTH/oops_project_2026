@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FOLIX — Farm Health Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <meta name="theme-color" content="#1F3B2A" />
+</head>
+
+<body data-page="dashboard">
+
+  <!-- Subtle organic background foliage (decorative, non-interactive) -->
+  <div class="dash-bg-leaf dash-bg-leaf-top" aria-hidden="true"></div>
+  <div class="dash-bg-leaf dash-bg-leaf-bottom" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="brand" href="index.html" aria-label="FOLIX — Home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="22" height="22">
+            <path d="M16 2C9 8 6 14 6 19a10 10 0 0 0 20 0c0-5-3-11-10-17Z" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="brand-name">FOLIX</span>
+      </a>
+      <nav class="header-nav" aria-label="Primary">
+        <a href="index.html" data-nav="home">Home</a>
+        <a href="how-it-works.html" data-nav="how">How it works</a>
+        <a href="scanner.html" data-nav="scanner">Scanner</a>
+        <a href="dashboard.html" data-nav="dashboard" class="is-active">Dashboard</a>
+        <a href="heatmap.html" data-nav="map">Disease Map</a>
+        <a href="farmer-alerts.html" data-nav="farmer-alerts">Nearby Alerts</a>
+      </nav>
+      <div class="header-tools">
+        <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle navigation menu"
+          aria-expanded="false">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <script src="protocol-check.js"></script>
+  <script src="nav.js"></script>
+  <script src="auth.js"></script>
+
+  <main class="dash-main-container wrap dash-page">
+
+    <!-- Top Hero Area -->
+    <section class="dash-hero-section" aria-label="Dashboard Overview and Scanner Quick-Access">
+      
+      <!-- Left Hero: Greeting & Brand Emblem -->
+      <div class="dash-hero-left">
+        <div class="dash-brand-emblem" aria-hidden="true">
+          <div class="dash-emblem-ring-outer">
+            <div class="dash-emblem-ring-inner">
+              <svg class="dash-emblem-leaf" viewBox="0 0 48 48" fill="none">
+                <path d="M24 6 C14 14 10 24 10 32 C10 40 18 44 24 44 C30 44 38 40 38 32 C38 24 34 14 24 6 Z" fill="url(#heroLeafGrad)"/>
+                <path d="M24 10 C24 22 24 34 24 42" stroke="#E3EFE5" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                <path d="M24 20 Q18 24 15 28" stroke="#E3EFE5" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
+                <path d="M24 26 Q30 30 33 34" stroke="#E3EFE5" stroke-width="1.6" stroke-linecap="round" opacity="0.7"/>
+                <defs>
+                  <linearGradient id="heroLeafGrad" x1="10" y1="6" x2="38" y2="44" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#3D7E56"/>
+                    <stop offset="0.6" stop-color="#235338"/>
+                    <stop offset="1" stop-color="#143623"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-hero-copy">
+          <p class="dash-eyebrow">GOOD MORNING, <span id="dashUserGreeting">USER</span></p>
+          <h1 class="dash-title">Here’s your farm health<br>at a glance.</h1>
+          <p class="dash-subtitle">Track crop health, recent scans, and important alerts all in one place.</p>
+        </div>
+      </div>
+
+      <!-- Right Hero: FOLIX AI Feature Banner -->
+      <div class="dash-hero-banner" role="region" aria-label="FOLIX AI Crop Monitoring">
+        <div class="dash-banner-inner">
+          <div class="dash-banner-info">
+            <span class="dash-banner-badge">FOLIX AI</span>
+            <h2 class="dash-banner-headline">Smarter insights.<br>Healthier harvests.</h2>
+            <p class="dash-banner-sub">AI-powered crop monitoring for a more sustainable tomorrow.</p>
+            <a class="dash-banner-cta" href="scanner.html" id="dashHeroScanBtn">
+              <span>Scan New Crop</span>
+              <span class="dash-cta-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+
+          <div class="dash-banner-photo-wrap" aria-hidden="true">
+            <img class="dash-banner-photo" src="assets/dashboard-banner-leaves.jpg" alt="" loading="eager" />
+          </div>
+
+          <div class="dash-banner-features" aria-label="FOLIX AI Capabilities">
+            <div class="dash-feature-item">
+              <div class="dash-feature-icon-box">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+                </svg>
+              </div>
+              <span class="dash-feature-text">Real-time Analysis</span>
+            </div>
+
+            <div class="dash-feature-item">
+              <div class="dash-feature-icon-box">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <span class="dash-feature-text">Early Disease Detection</span>
+            </div>
+
+            <div class="dash-feature-item">
+              <div class="dash-feature-icon-box">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 20V10M12 20V4M6 20v-6"/>
+                </svg>
+              </div>
+              <span class="dash-feature-text">Higher Yield</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- KPI Statistics Section (4 Cards) -->
+    <section class="dash-overview dash-kpi-grid" id="dashOverview" hidden aria-label="Key Farm Health Metrics">
+      
+      <!-- Card 1: Total Scans -->
+      <div class="dash-kpi-card" id="dashKpiTotal">
+        <div class="dash-kpi-top">
+          <div class="dash-kpi-icon-wrap icon-sage">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a10 10 0 0 1 10 10c0 5.5-4.5 10-10 10S2 17.5 2 12A10 10 0 0 1 12 2z"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <span class="dash-kpi-title">Total Scans</span>
+          <span class="dash-kpi-chevron" aria-hidden="true">›</span>
+        </div>
+        <div class="dash-kpi-main">
+          <p class="dash-stat-value" id="dashStatTotal">–</p>
+          <svg class="dash-sparkline" viewBox="0 0 110 38" fill="none" aria-hidden="true">
+            <path d="M2 30 Q 30 28, 55 18 T 85 14 T 108 6" stroke="#2D6A4F" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="108" cy="6" r="3.5" fill="#2D6A4F"/>
+          </svg>
+        </div>
+        <div class="dash-kpi-trend">
+          <span class="trend-indicator trend-up" id="dashTrendTotal">↑ 33%</span>
+          <span class="trend-label">vs. last week</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Healthy Crops -->
+      <div class="dash-kpi-card" id="dashKpiHealthy">
+        <div class="dash-kpi-top">
+          <div class="dash-kpi-icon-wrap icon-sage">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+          </div>
+          <span class="dash-kpi-title">Healthy Crops</span>
+          <span class="dash-kpi-chevron" aria-hidden="true">›</span>
+        </div>
+        <div class="dash-kpi-main">
+          <p class="dash-stat-value" id="dashStatHealthy">–</p>
+          <svg class="dash-sparkline" viewBox="0 0 110 38" fill="none" aria-hidden="true">
+            <path d="M2 32 Q 28 26, 52 22 T 82 12 T 108 4" stroke="#2D6A4F" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="108" cy="4" r="3.5" fill="#2D6A4F"/>
+          </svg>
+        </div>
+        <div class="dash-kpi-trend">
+          <span class="trend-indicator trend-up" id="dashTrendHealthy">↑ 50%</span>
+          <span class="trend-label">vs. last week</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Diseased Crops -->
+      <div class="dash-kpi-card" id="dashKpiDiseased">
+        <div class="dash-kpi-top">
+          <div class="dash-kpi-icon-wrap icon-amber">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <span class="dash-kpi-title">Diseased Crops</span>
+          <span class="dash-kpi-chevron" aria-hidden="true">›</span>
+        </div>
+        <div class="dash-kpi-main">
+          <p class="dash-stat-value" id="dashStatDiseased">–</p>
+          <svg class="dash-sparkline" viewBox="0 0 110 38" fill="none" aria-hidden="true">
+            <path d="M2 18 Q 30 32, 55 20 T 85 28 T 108 22" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="108" cy="22" r="3.5" fill="#DC2626"/>
+          </svg>
+        </div>
+        <div class="dash-kpi-trend">
+          <span class="trend-indicator trend-down" id="dashTrendDiseased">↓ 25%</span>
+          <span class="trend-label">vs. last week</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Needs Human Review (Avg. Scan Time / Attention) -->
+      <div class="dash-kpi-card" id="dashKpiReview">
+        <div class="dash-kpi-top">
+          <div class="dash-kpi-icon-wrap icon-sage">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <span class="dash-kpi-title">Needs Review</span>
+          <span class="dash-kpi-chevron" aria-hidden="true">›</span>
+        </div>
+        <div class="dash-kpi-main">
+          <p class="dash-stat-value" id="dashStatReview">–</p>
+          <svg class="dash-sparkline" viewBox="0 0 110 38" fill="none" aria-hidden="true">
+            <path d="M2 26 Q 30 18, 55 22 T 82 14 T 108 10" stroke="#4A7C59" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="108" cy="10" r="3.5" fill="#4A7C59"/>
+          </svg>
+        </div>
+        <div class="dash-kpi-trend">
+          <span class="trend-indicator trend-neutral" id="dashTrendReview">Attention needed</span>
+          <span class="trend-label" id="dashStatSub">Flagged scans</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Loading State -->
+    <div class="dash-state" id="dashLoading">
+      <div class="dash-spinner" aria-hidden="true"></div>
+      <p>Loading your farm dashboard…</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="dash-state" id="dashError" hidden>
+      <h3>Couldn't load your dashboard</h3>
+      <p id="dashErrorMessage">Something went wrong while reaching the FOLIX server.</p>
+      <button class="btn btn-secondary" id="dashRetryBtn" type="button">Try again</button>
+    </div>
+
+    <!-- Auth Required State -->
+    <div class="dash-state" id="dashAuthRequired" hidden>
+      <h3>Log in to see your dashboard</h3>
+      <p>Your saved scans belong to your FOLIX account. Log in, or create a free account, to view them.</p>
+      <div class="dash-state-actions">
+        <a class="btn btn-primary" href="login.html?next=dashboard.html">Log in</a>
+        <a class="btn btn-secondary" href="register.html?next=dashboard.html">Create account</a>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="dash-state" id="dashEmpty" hidden>
+      <div class="dash-empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M16 3C9 9 6 15 6 20a10 10 0 0 0 20 0c0-5-3-11-10-17Z"/>
+          <path d="M16 11v9"/>
+        </svg>
+      </div>
+      <h3>No scans saved yet</h3>
+      <p>Once you save a diagnosis from the Scanner, your health trends, scans, and disease breakdown will appear here.</p>
+      <a class="btn btn-primary" href="scanner.html">Go to Scanner</a>
+    </div>
+
+    <!-- Populated Main Analytics Grid -->
+    <div class="dash-analytics-section" id="dashAnalyticsSection" hidden>
+      <div class="dash-analytics-grid">
+        
+        <!-- Left Column: Overview Line Chart & Distribution Donut -->
+        <div class="dash-analytics-left">
+          
+          <!-- Crop Health Overview Chart Card -->
+          <div class="dash-card dash-chart-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title-group">
+                <span class="dash-card-icon-pill" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                  </svg>
+                </span>
+                <h3 class="dash-card-title">Crop Health Overview</h3>
+              </div>
+              <div class="dash-time-selector">
+                <button class="dash-time-pill" type="button" aria-haspopup="true" aria-expanded="false">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span>Last 7 days</span>
+                  <span class="dash-time-caret">▾</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- SVG Spline Multi-Series Chart Container -->
+            <div class="dash-chart-body" id="dashChartBody">
+              <div class="dash-chart-y-axis" aria-hidden="true">
+                <span>100</span>
+                <span>75</span>
+                <span>50</span>
+                <span>25</span>
+                <span>0</span>
+              </div>
+              <div class="dash-chart-canvas-wrap">
+                <svg class="dash-line-chart-svg" id="dashLineChartSvg" viewBox="0 0 680 220" preserveAspectRatio="none">
+                  <!-- Horizontal Grid Lines -->
+                  <line x1="0" y1="20" x2="680" y2="20" class="chart-grid-line"/>
+                  <line x1="0" y1="65" x2="680" y2="65" class="chart-grid-line"/>
+                  <line x1="0" y1="110" x2="680" y2="110" class="chart-grid-line"/>
+                  <line x1="0" y1="155" x2="680" y2="155" class="chart-grid-line"/>
+                  <line x1="0" y1="200" x2="680" y2="200" class="chart-grid-line"/>
+
+                  <!-- Linear Gradients for Area Fills -->
+                  <defs>
+                    <linearGradient id="healthyFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#2D6A4F" stop-opacity="0.22"/>
+                      <stop offset="100%" stop-color="#2D6A4F" stop-opacity="0.01"/>
+                    </linearGradient>
+                    <linearGradient id="riskFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#D97706" stop-opacity="0.16"/>
+                      <stop offset="100%" stop-color="#D97706" stop-opacity="0.01"/>
+                    </linearGradient>
+                    <linearGradient id="diseasedFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#DC2626" stop-opacity="0.12"/>
+                      <stop offset="100%" stop-color="#DC2626" stop-opacity="0.01"/>
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Paths will be rendered/updated dynamically -->
+                  <path id="chartAreaHealthy" class="chart-area-healthy" d="M0 200 L 0 150 Q 150 110, 300 130 T 680 90 L 680 200 Z" fill="url(#healthyFill)"/>
+                  <path id="chartLineHealthy" class="chart-line-healthy" d="M0 150 Q 150 110, 300 130 T 680 90" fill="none" stroke="#2D6A4F" stroke-width="2.5" stroke-linecap="round"/>
+
+                  <path id="chartAreaRisk" class="chart-area-risk" d="M0 200 L 0 175 Q 170 160, 340 170 T 680 150 L 680 200 Z" fill="url(#riskFill)"/>
+                  <path id="chartLineRisk" class="chart-line-risk" d="M0 175 Q 170 160, 340 170 T 680 150" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round"/>
+
+                  <path id="chartAreaDiseased" class="chart-area-diseased" d="M0 200 L 0 190 Q 200 185, 400 190 T 680 185 L 680 200 Z" fill="url(#diseasedFill)"/>
+                  <path id="chartLineDiseased" class="chart-line-diseased" d="M0 190 Q 200 185, 400 190 T 680 185" fill="none" stroke="#DC2626" stroke-width="1.8" stroke-linecap="round"/>
+
+                  <!-- Interactive Focus Point -->
+                  <circle id="chartPointActive" cx="300" cy="130" r="4.5" fill="#2D6A4F" stroke="#ffffff" stroke-width="2"/>
+                </svg>
+
+                <!-- Tooltip Overlay -->
+                <div class="dash-chart-tooltip" id="dashChartTooltip" style="left: 44%; top: 32%;">
+                  <span class="tooltip-date" id="dashTooltipDate">Latest</span>
+                  <span class="tooltip-val" id="dashTooltipVal">● Healthy</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- X-axis Date Labels -->
+            <div class="dash-chart-x-axis" id="dashChartXAxis">
+              <span>Day 1</span>
+              <span>Day 2</span>
+              <span>Day 3</span>
+              <span>Day 4</span>
+              <span>Day 5</span>
+              <span>Day 6</span>
+              <span>Day 7</span>
+            </div>
+
+            <!-- Bottom Legend -->
+            <div class="dash-chart-legend">
+              <span class="legend-item"><span class="legend-dot dot-healthy"></span> Healthy</span>
+              <span class="legend-item"><span class="legend-dot dot-risk"></span> At Risk</span>
+              <span class="legend-item"><span class="legend-dot dot-diseased"></span> Diseased</span>
+            </div>
+          </div>
+
+          <!-- Crop Health Distribution Donut Card -->
+          <div class="dash-card dash-donut-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title-group">
+                <span class="dash-card-icon-pill" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 2a10 10 0 0 1 10 10"/>
+                  </svg>
+                </span>
+                <h3 class="dash-card-title">Crop Health Distribution</h3>
+              </div>
+            </div>
+
+            <div class="dash-donut-body">
+              <div class="dash-donut-chart-wrap">
+                <svg class="dash-donut-svg" viewBox="0 0 160 160">
+                  <circle cx="80" cy="80" r="62" fill="none" stroke="#EAEFE8" stroke-width="18"/>
+                  <circle id="donutDiseasedCircle" cx="80" cy="80" r="62" fill="none" stroke="#DC2626" stroke-width="18"
+                    stroke-dasharray="390" stroke-dashoffset="390" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+                  <circle id="donutRiskCircle" cx="80" cy="80" r="62" fill="none" stroke="#D97706" stroke-width="18"
+                    stroke-dasharray="390" stroke-dashoffset="390" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+                  <circle id="donutHealthyCircle" cx="80" cy="80" r="62" fill="none" stroke="#2D6A4F" stroke-width="18"
+                    stroke-dasharray="390" stroke-dashoffset="390" stroke-linecap="round" transform="rotate(-90 80 80)"/>
+                </svg>
+                <div class="dash-donut-center">
+                  <span class="donut-center-pct" id="dashDonutPercent">0%</span>
+                  <span class="donut-center-label" id="dashDonutLabel">Healthy</span>
+                </div>
+              </div>
+
+              <div class="dash-donut-legend">
+                <div class="dash-donut-legend-row">
+                  <span class="legend-row-lead">
+                    <span class="legend-dot dot-healthy"></span>
+                    <span class="legend-name">Healthy</span>
+                  </span>
+                  <span class="legend-pct" id="dashLegendHealthyPct">0%</span>
+                  <span class="legend-count" id="dashLegendHealthyCount">0</span>
+                </div>
+                <div class="dash-donut-legend-row">
+                  <span class="legend-row-lead">
+                    <span class="legend-dot dot-risk"></span>
+                    <span class="legend-name">At Risk</span>
+                  </span>
+                  <span class="legend-pct" id="dashLegendRiskPct">0%</span>
+                  <span class="legend-count" id="dashLegendRiskCount">0</span>
+                </div>
+                <div class="dash-donut-legend-row">
+                  <span class="legend-row-lead">
+                    <span class="legend-dot dot-diseased"></span>
+                    <span class="legend-name">Diseased</span>
+                  </span>
+                  <span class="legend-pct" id="dashLegendDiseasedPct">0%</span>
+                  <span class="legend-count" id="dashLegendDiseasedCount">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Recent Activity & Quick Actions -->
+        <div class="dash-analytics-right">
+          
+          <!-- Recent Activity Card -->
+          <div class="dash-card dash-activity-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title-group">
+                <span class="dash-card-icon-pill" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                </span>
+                <h3 class="dash-card-title">Recent Activity</h3>
+              </div>
+              <a href="#dashHistorySection" class="dash-card-link-action" id="dashActivityViewAll">View All →</a>
+            </div>
+
+            <!-- Dynamic Activity List rendered from real reports -->
+            <div class="dash-activity-list" id="dashActivityList">
+              <div class="dash-activity-empty">
+                <p>No recent activity yet.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions 2x2 Tile Card -->
+          <div class="dash-card dash-actions-card">
+            <div class="dash-card-header">
+              <div class="dash-card-title-group">
+                <span class="dash-card-icon-pill" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                </span>
+                <h3 class="dash-card-title">Quick Actions</h3>
+              </div>
+            </div>
+
+            <div class="dash-actions-grid">
+              
+              <!-- Action 1: Scan Crop -->
+              <a class="dash-action-tile" href="scanner.html">
+                <div class="dash-action-icon-box">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </div>
+                <div class="dash-action-info">
+                  <h4 class="dash-action-heading">Scan Crop</h4>
+                  <p class="dash-action-sub">Analyze plant health <span aria-hidden="true">→</span></p>
+                </div>
+              </a>
+
+              <!-- Action 2: View Disease Map -->
+              <a class="dash-action-tile" href="heatmap.html">
+                <div class="dash-action-icon-box">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                    <line x1="8" y1="2" x2="8" y2="18"/>
+                    <line x1="16" y1="6" x2="16" y2="22"/>
+                  </svg>
+                </div>
+                <div class="dash-action-info">
+                  <h4 class="dash-action-heading">View Disease Map</h4>
+                  <p class="dash-action-sub">Explore spread &amp; risk <span aria-hidden="true">→</span></p>
+                </div>
+              </a>
+
+              <!-- Action 3: Nearby Alerts -->
+              <a class="dash-action-tile" href="farmer-alerts.html">
+                <div class="dash-action-icon-box">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                  </svg>
+                </div>
+                <div class="dash-action-info">
+                  <h4 class="dash-action-heading">Nearby Alerts</h4>
+                  <p class="dash-action-sub">Check local reports <span aria-hidden="true">→</span></p>
+                </div>
+              </a>
+
+              <!-- Action 4: Reports / Scan History -->
+              <a class="dash-action-tile" href="#dashHistorySection" id="dashQuickReports">
+                <div class="dash-action-icon-box">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                </div>
+                <div class="dash-action-info">
+                  <h4 class="dash-action-heading">Reports</h4>
+                  <p class="dash-action-sub">View detailed analytics <span aria-hidden="true">→</span></p>
+                </div>
+              </a>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Populated State: Recent Scans Data Table (Stage 5C #dashHistorySection) -->
+    <section class="dash-section dash-history-card" id="dashHistorySection" hidden aria-label="Recent Scans History">
+      <div class="dash-table-header-group">
+        <div class="dash-card-title-group">
+          <span class="dash-card-icon-pill" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="9" y1="21" x2="9" y2="9"/>
+            </svg>
+          </span>
+          <h2 class="dash-table-title">Recent Scans</h2>
+        </div>
+        <div class="dash-table-tools">
+          <span class="dash-count" id="dashHistoryCount"></span>
+        </div>
+      </div>
+
+      <!-- Table Column Headers -->
+      <div class="dash-table-cols-head" aria-hidden="true">
+        <span class="col-crop">Crop</span>
+        <span class="col-image">Image</span>
+        <span class="col-disease">Diagnosis / Status</span>
+        <span class="col-conf">Confidence</span>
+        <span class="col-date">Date &amp; Time</span>
+        <span class="col-action">Action</span>
+      </div>
+
+      <!-- History rows list (Each .dash-row is inserted here dynamically) -->
+      <div class="dash-history" id="dashHistoryList" role="list"></div>
+
+      <!-- Pagination -->
+      <div class="dash-pagination" id="dashPagination" hidden>
+        <button class="btn btn-secondary btn-small" id="dashPrevBtn" type="button">← Newer</button>
+        <span id="dashPageLabel"></span>
+        <button class="btn btn-secondary btn-small" id="dashNextBtn" type="button">Older →</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Report detail overlay -->
+  <div class="dash-overlay" id="dashOverlay" hidden>
+    <div class="dash-panel" role="dialog" aria-modal="true" aria-labelledby="dashPanelDisease">
+      <div class="dash-panel-head">
+        <div>
+          <p class="dash-row-crop" id="dashPanelCrop" style="margin:0 0 2px;"></p>
+          <h2 id="dashPanelDisease" style="margin:0;"></h2>
+        </div>
+        <button class="dash-panel-close" id="dashPanelCloseBtn" type="button"
+          aria-label="Close report detail">✕</button>
+      </div>
+      <p class="dash-panel-date" id="dashPanelDate"></p>
+
+      <div class="dash-forward" id="dashForwardSection" hidden>
+        <div class="dash-forward-row">
+          <span class="dash-forward-status" id="dashForwardStatus"></span>
+          <button class="btn btn-secondary btn-small" id="dashForwardBtn" type="button" hidden>Forward Case</button>
+        </div>
+        <div class="dash-forward-picker" id="dashForwardPicker" hidden>
+          <div class="field-row">
+            <label for="dashForwardContactSelect">Send this case to</label>
+            <select id="dashForwardContactSelect"></select>
+          </div>
+          <div class="dash-forward-actions">
+            <button class="btn btn-primary btn-small" id="dashForwardConfirmBtn" type="button">Confirm forward</button>
+            <button class="btn btn-secondary btn-small" id="dashForwardCancelBtn" type="button">Cancel</button>
+          </div>
+          <p class="dash-forward-message" id="dashForwardMessage" hidden></p>
+        </div>
+      </div>
+
+      <!-- Alert nearby farmers (Stage 6I Part 3B) — only shown for epidemic-risk reports -->
+      <div class="dash-alert-trigger" id="dashAlertTriggerSection" hidden>
+        <div class="dash-alert-trigger-row">
+          <div class="dash-alert-trigger-info">
+            <span class="dash-alert-trigger-label">Alert nearby farmers</span>
+            <span class="dash-alert-trigger-sub" id="dashAlertTriggerSub">Warn farmers in your coarse area about this
+              epidemic-risk disease.</span>
+          </div>
+          <button class="btn btn-warning btn-small" id="dashAlertTriggerBtn" type="button">Send alert</button>
+        </div>
+        <p class="dash-alert-trigger-message" id="dashAlertTriggerMessage" hidden></p>
+        <a class="dash-alert-view-link" href="farmer-alerts.html" id="dashAlertViewLink" hidden>View your received
+          alerts &rarr;</a>
+      </div>
+
+      <!-- Alert local authority when farmer suspects high spreadability -->
+      <div class="dash-alert-trigger" id="dashEscalateSection" hidden>
+        <div class="dash-alert-trigger-row">
+          <div class="dash-alert-trigger-info">
+            <span class="dash-alert-trigger-label">⚠️ Alert Authority</span>
+            <span class="dash-alert-trigger-sub" id="dashEscalateSub">Suspect high spread risk? Alert your local agricultural office so they can verify and broadcast warnings to nearby farmers.</span>
+          </div>
+          <button class="btn btn-warning btn-small" id="dashEscalateBtn" type="button">Alert Authority</button>
+        </div>
+        <p class="dash-alert-trigger-message" id="dashEscalateMessage" hidden></p>
+      </div>
+
+      <div id="dashPanelBody"></div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+
+</html>

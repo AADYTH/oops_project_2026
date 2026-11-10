@@ -1,0 +1,17 @@
+{
+  "_comment": "Maintained by hand, not by the model. true = inherently fast-spreading and/or quarantine-notifiable regardless of how much damage a single scan shows; false = a real disease that does not carry that inherent epidemic/quarantine risk. Keys are matched against the classifier's disease name via DiseaseNameMatcher (exact, then primary-name, then unique-containment), so exact spelling need not match remedies.json.",
+
+  "Late Blight (Phytophthora infestans)": true,
+  "Early Blight (Alternaria solani)": false,
+  "Bacterial Leaf Blight (Xanthomonas oryzae)": true,
+  "Rice Blast (Magnaporthe oryzae)": true,
+  "Stripe Rust (Puccinia striiformis)": true,
+  "Northern Corn Leaf Blight": false,
+  "Citrus Greening / Huanglongbing": true,
+  "Panama Wilt / Fusarium Wilt TR4": true,
+  "Powdery Mildew": false,
+  "Apple Scab": false,
+  "Bacterial Blight (Cotton)": true,
+  "Healthy - No Disease Detected": false,
+  "UNKNOWN": false
+}

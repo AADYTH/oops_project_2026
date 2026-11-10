@@ -1,0 +1,894 @@
+/* ---------- FOLIX Nearby Farmer Alerts — Production Redesign ----------
+   Visual Source of Truth: media_1790785825094.png
+   Restrained, enterprise-grade, serene agricultural intelligence styling.
+   All rules are strictly scoped to the Nearby Alerts page (.fa-*). */
+
+.fa-page {
+  padding-top: 36px;
+  padding-bottom: 96px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.fa-grid[hidden] {
+  display: none !important;
+}
+
+/* ==================================================================
+   1. Compact Page Header
+   ================================================================== */
+.fa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.fa-header-main {
+  flex: 1;
+  min-width: 280px;
+}
+
+.fa-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill, 999px);
+  background: #D9E4D6;
+  color: #2D4C38;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.fa-tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2E653F;
+}
+
+.fa-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.5vw, 2.45rem);
+  font-weight: 600;
+  color: #14241B;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.fa-subtitle {
+  font-size: 0.96rem;
+  color: #556257;
+  margin: 0 0 8px 0;
+}
+
+.fa-privacy-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.84rem;
+  color: #6C7A6F;
+  margin: 0;
+}
+
+.fa-icon-bell {
+  color: #798B7D;
+  flex: none;
+}
+
+.fa-header-badge {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.fa-active-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: var(--radius-pill, 999px);
+  background: #E1ECE0;
+  border: 1px solid #CFDDD0;
+  color: #1E3E2B;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.fa-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2F7348;
+}
+
+/* ==================================================================
+   2. Controls / Filters Bar
+   ================================================================== */
+.fa-controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.fa-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.fa-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid #D8E0D4;
+  border-radius: 10px;
+  padding: 0 12px;
+  height: 42px;
+  min-width: 145px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fa-select-wrap:focus-within,
+.fa-select-wrap:hover {
+  border-color: #2F6141;
+  box-shadow: 0 0 0 2px rgba(47, 97, 65, 0.08);
+}
+
+.fa-select-icon {
+  color: #4C6A54;
+  margin-right: 8px;
+  flex: none;
+}
+
+.fa-filter-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1F2E23;
+  cursor: pointer;
+  padding-right: 18px;
+  width: 100%;
+}
+
+.fa-select-chevron {
+  position: absolute;
+  right: 12px;
+  font-size: 0.65rem;
+  color: #69786D;
+  pointer-events: none;
+}
+
+.fa-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #FFFFFF;
+  border: 1px solid #D8E0D4;
+  border-radius: 10px;
+  height: 42px;
+  padding: 0 18px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2B4232;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.15s ease;
+}
+
+.fa-reset-btn:hover {
+  background: #F4F7F2;
+  border-color: #2F6141;
+  color: #172D1E;
+}
+
+/* ==================================================================
+   3. Main Grid Layout (2 Columns)
+   ================================================================== */
+.fa-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.fa-main-card {
+  background: #FFFFFF;
+  border: 1px solid #E1E7DC;
+  border-radius: 14px;
+  padding: 24px 26px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+}
+
+.fa-card-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 4px;
+}
+
+.fa-card-section-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #16241C;
+  margin: 0;
+}
+
+.fa-sort-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #627265;
+}
+
+.fa-sort-label {
+  font-weight: 500;
+}
+
+.fa-select-wrap--sort {
+  min-width: 95px;
+  height: 34px;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #F8FAF6;
+  border-color: #D6DFD2;
+}
+
+.fa-sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1F2E23;
+  cursor: pointer;
+  padding-right: 14px;
+  width: 100%;
+}
+
+/* ==================================================================
+   4. Alert Cards
+   ================================================================== */
+.fa-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fa-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8DC;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  position: relative;
+}
+
+.fa-card:hover {
+  border-color: #CBD6C7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.fa-card.is-epidemic {
+  border-left: 3.5px solid #BC4727;
+}
+
+.fa-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #F8EBE6;
+  color: #B94426;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.fa-card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fa-epidemic-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #B94426;
+  color: #FFFFFF;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  letter-spacing: 0.01em;
+}
+
+.fa-warn-symbol {
+  font-size: 0.76rem;
+}
+
+.fa-card-disease {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #152219;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.fa-card-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.83rem;
+  color: #5B6B5F;
+  flex-wrap: wrap;
+}
+
+.fa-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fa-meta-item svg {
+  color: #7B8C7E;
+  flex: none;
+}
+
+.fa-card-timing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #7B8B7F;
+  margin-top: 1px;
+}
+
+.fa-meta-dot {
+  font-size: 0.9rem;
+  color: #A0B0A3;
+}
+
+.fa-meta-expiry {
+  color: #7B8B7F;
+}
+
+.fa-card-arrow {
+  color: #9FB0A2;
+  flex: none;
+  padding-left: 6px;
+  transition: transform 0.15s ease, color 0.15s ease;
+  display: flex;
+  align-items: center;
+}
+
+.fa-card:hover .fa-card-arrow {
+  transform: translateX(3px);
+  color: #2B4E36;
+}
+
+/* ==================================================================
+   5. End of List Notice
+   ================================================================== */
+.fa-list-end {
+  margin-top: 36px;
+  padding: 24px 16px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.fa-leaf-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #EDF3EC;
+  color: #376344;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.fa-end-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.94rem;
+  color: #17261C;
+  margin: 0;
+}
+
+.fa-end-desc {
+  font-size: 0.82rem;
+  color: #6C7D70;
+  margin: 0;
+}
+
+/* Filter zero-match state inside list */
+.fa-filter-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #556458;
+  font-size: 0.9rem;
+}
+
+.fa-filter-empty p {
+  margin: 0 0 12px 0;
+}
+
+/* ==================================================================
+   6. Supporting Right Column (Map & Privacy)
+   ================================================================== */
+.fa-side-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Map View Card */
+.fa-map-card {
+  background: #FFFFFF;
+  border: 1px solid #E1E7DC;
+  border-radius: 14px;
+  padding: 18px 20px 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+}
+
+.fa-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.fa-map-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: #16241C;
+}
+
+.fa-map-title svg {
+  color: #4C6A54;
+}
+
+.fa-map-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2F593C;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+
+.fa-map-link:hover {
+  color: #15321F;
+  text-decoration: underline;
+}
+
+.fa-minimap-wrap {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #DFE6DB;
+  background: #E8EFE5;
+}
+
+.fa-minimap {
+  width: 100%;
+  height: 100%;
+  background: #E8EFE5;
+}
+
+.fa-minimap .leaflet-tile {
+  filter: saturate(0.6) brightness(1.02) contrast(0.96);
+}
+
+.fa-locate-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 400;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #FFFFFF;
+  border: 1px solid #D4DCD0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  color: #2C4835;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.fa-locate-btn:hover {
+  background: #F4F8F2;
+  color: #162E1E;
+  border-color: #2F6141;
+}
+
+@keyframes faPulse {
+  0% { transform: scale(0.85); opacity: 0.85; }
+  50% { transform: scale(1.6); opacity: 0.25; }
+  100% { transform: scale(2.0); opacity: 0; }
+}
+
+/* Privacy Protected Card */
+.fa-privacy-card {
+  background: #FFFFFF;
+  border: 1px solid #E1E7DC;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+}
+
+.fa-priv-icon-wrap {
+  color: #385E44;
+  margin-top: 2px;
+  flex: none;
+}
+
+.fa-priv-content {
+  flex: 1;
+}
+
+.fa-priv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.fa-priv-title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #16241C;
+  margin: 0;
+}
+
+.fa-priv-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2E7A4A;
+  flex: none;
+}
+
+.fa-priv-desc {
+  font-size: 0.81rem;
+  color: #627265;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ==================================================================
+   7. Page States (Loading, Empty, Auth, Error)
+   ================================================================== */
+.fa-state-card {
+  background: #FFFFFF;
+  border: 1px solid #E1E7DC;
+  border-radius: 14px;
+  padding: 48px 32px;
+  text-align: center;
+  max-width: 600px;
+  margin: 24px auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.fa-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #EDF3EC;
+  color: #3A6948;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+}
+
+.fa-disclaimer {
+  font-size: 0.8rem;
+  color: #6C7D70;
+  max-width: 68ch;
+  margin: 24px auto 0 auto;
+  text-align: center;
+  line-height: 1.45;
+}
+
+/* ==================================================================
+   8. Detail Modal Dialog
+   ================================================================== */
+.fa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 28, 21, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.fa-modal-overlay[hidden] {
+  display: none;
+}
+
+.fa-modal-dialog {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid #DDE5D8;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  animation: faModalPop 0.18s ease-out;
+}
+
+@keyframes faModalPop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.fa-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #E7EEE3;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.fa-modal-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4C6A54;
+}
+
+.fa-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #14241B;
+  margin: 4px 0 0 0;
+}
+
+.fa-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #798B7D;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s;
+}
+
+.fa-modal-close:hover {
+  color: #14241B;
+}
+
+.fa-modal-body {
+  padding: 22px 24px;
+}
+
+.fa-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+  margin-bottom: 20px;
+}
+
+.fa-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fa-detail-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #7A8B7E;
+}
+
+.fa-detail-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #17261D;
+}
+
+.fa-modal-privacy-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #F4F7F2;
+  border: 1px solid #DEE7DC;
+  font-size: 0.8rem;
+  color: #4B6352;
+  line-height: 1.45;
+}
+
+.fa-modal-privacy-callout svg {
+  color: #2F6141;
+  flex: none;
+  margin-top: 1px;
+}
+
+.fa-modal-footer {
+  padding: 14px 24px;
+  border-top: 1px solid #E7EEE3;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #FAFBF9;
+}
+
+/* ==================================================================
+   9. Responsive Breakpoints
+   ================================================================== */
+@media (max-width: 960px) {
+  .fa-grid {
+    grid-template-columns: 1fr;
+  }
+  .fa-side-cards {
+    order: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .fa-header {
+    flex-direction: column;
+  }
+  .fa-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fa-filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fa-select-wrap {
+    width: 100%;
+  }
+  .fa-reset-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .fa-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .fa-card-arrow {
+    display: none;
+}
+
+/* Guest Surveillance Banner & Zero Direct Card */
+.fa-guest-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #EBF3E8;
+  border: 1px solid #C8DEC3;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.fa-guest-banner-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  flex: none;
+  margin-top: 2px;
+}
+
+.fa-guest-banner-body {
+  font-size: 0.88rem;
+  color: #274730;
+  line-height: 1.45;
+}
+
+.fa-guest-banner-body strong {
+  display: block;
+  font-weight: 700;
+  color: #173820;
+  margin-bottom: 2px;
+}
+
+.fa-guest-banner-body a {
+  color: #1F6B38;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.fa-zero-direct-card {
+  text-align: center;
+  padding: 32px 20px;
+  background: #F8FAF7;
+  border: 1px dashed #D1DDD0;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.fa-zero-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.fa-zero-direct-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1E3725;
+  margin: 0 0 6px 0;
+}
+
+.fa-zero-direct-card p {
+  font-size: 0.88rem;
+  color: #5D7262;
+  margin: 0;
+  max-width: 440px;
+  margin-inline: auto;
+}
